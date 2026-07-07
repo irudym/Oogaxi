@@ -1,0 +1,20 @@
+[package]
+name = "oogaxi"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = "0.19.0"
+
+
+# Dev only: 'cargo run --features dev' turns on dynamic linking
+ [features]
+ dev = ["bevy/dynamic_linking"]
+
+ # light optimisation, fast recompiles
+ [profile.dev]
+ opt-level = 1
+
+ # dependencies: full optimisation, compile once
+ [profile.dev.package."*"]
+ opt-level = 3
