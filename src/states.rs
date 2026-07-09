@@ -1,6 +1,8 @@
-use std::ops::DerefMut;
+use std::time::Duration;
 
 use bevy::prelude::*;
+
+use crate::messages::{CopterCrashed, PassengerDelivered};
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum AppState {
@@ -20,7 +22,7 @@ pub enum IsPaused {
     Paused,
 }
 
-#[derive(Component)]
+#[derive(Resource, Default)]
 struct LoadingTimer(Timer);
 
 pub struct StatesPlugin;
@@ -35,6 +37,7 @@ impl Plugin for StatesPlugin {
             .add_systems(OnEnter(IsPaused::Paused), setup_pause_overlay)
             .add_systems(OnEnter(AppState::Loading), setup_loading)
             // input routers, gated per state
+            .init_resource::<LoadingTimer>()
             .add_systems(
                 Update,
                 (
@@ -47,7 +50,7 @@ impl Plugin for StatesPlugin {
     }
 }
 
-fn setup_loading(mut commands: Commands) {
+fn setup_loading(mut commands: Commands, mut timer: ResMut<LoadingTimer>) {
     commands.spawn((
         Text::new("Loading..."),
         TextFont {
@@ -56,10 +59,8 @@ fn setup_loading(mut commands: Commands) {
         },
         DespawnOnExit(AppState::Loading),
     ));
-    commands.spawn((
-        LoadingTimer(Timer::from_seconds(1.0, TimerMode::Once)),
-        DespawnOnExit(AppState::Loading),
-    ));
+    timer.0.set_duration(Duration::from_secs(1));
+    timer.0.reset();
 }
 
 fn setup_menu_screen(mut commands: Commands) {
@@ -112,7 +113,8 @@ fn ingame_input(
     keys: Res<ButtonInput<KeyCode>>,
     paused: Res<State<IsPaused>>,
     mut next_pause: ResMut<NextState<IsPaused>>,
-    mut next_app: ResMut<NextState<AppState>>,
+    mut crashed: MessageWriter<CopterCrashed>,
+    mut delivered: MessageWriter<PassengerDelivered>,
 ) {
     if keys.just_pressed(KeyCode::Escape) {
         next_pause.set(match paused.get() {
@@ -121,19 +123,21 @@ fn ingame_input(
         });
     }
 
-    // end the game
-    if keys.just_pressed(KeyCode::KeyK) && *paused.get() == IsPaused::Running {
-        next_app.set(AppState::GameOver);
+    if *paused.get() == IsPaused::Running {
+        if keys.just_pressed(KeyCode::KeyK) {
+            crashed.write(CopterCrashed);
+        }
+        if keys.just_pressed(KeyCode::KeyD) {
+            delivered.write(PassengerDelivered { fare: 25 });
+        }
     }
 }
 
 fn loading_update(
-    mut timer: Single<&mut LoadingTimer>,
+    mut timer: ResMut<LoadingTimer>,
     mut next: ResMut<NextState<AppState>>,
     time: Res<Time>,
 ) {
-    let timer = timer.deref_mut();
-
     timer.0.tick(time.delta());
 
     if timer.0.is_finished() {

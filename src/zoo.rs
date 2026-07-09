@@ -19,6 +19,13 @@ impl Plugin for ZooPlugin {
                     .chain()
                     .run_if(in_state(IsPaused::Running)),
             );
+        app.add_observer(|add: On<Add, Passenger>| {
+            info!("A passenger appeared: {}", add.entity);
+        });
+
+        app.add_observer(|remove: On<Remove, Passenger>| {
+            info!("A passenger left us: {}", remove.entity)
+        });
     }
 }
 

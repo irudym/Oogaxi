@@ -1,3 +1,5 @@
+mod messages;
+mod score;
 mod states;
 mod zoo;
 
@@ -5,6 +7,8 @@ use bevy::{prelude::*, window::PresentMode};
 
 use states::StatesPlugin;
 use zoo::ZooPlugin;
+
+use crate::score::ScorePlugin;
 
 fn main() {
     App::new()
@@ -21,7 +25,7 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest()),
         )
-        .add_plugins((StatesPlugin, ZooPlugin))
+        .add_plugins((StatesPlugin, ZooPlugin, ScorePlugin))
         .add_systems(Startup, spawn_camera)
         .run();
 }
