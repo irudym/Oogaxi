@@ -1,4 +1,7 @@
-use crate::states::{AppState, IsPaused};
+use crate::{
+    physics::PhysicalTranslation,
+    states::{AppState, IsPaused},
+};
 use bevy::prelude::*;
 
 pub struct ZooPlugin;
@@ -9,7 +12,6 @@ impl Plugin for ZooPlugin {
             .add_systems(
                 Update,
                 (
-                    follow_mouse,
                     panic_button,
                     tick_lifetimes,
                     make_a_rock,
@@ -58,14 +60,6 @@ struct LifeTime(Timer);
 struct Rock;
 
 fn setup_zoo(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // the player: a marker, sprite, position
-    commands.spawn((
-        Player,
-        Sprite::from_image(asset_server.load("sprites/copter.png")),
-        Transform::from_xyz(0.0, 0.0, 0.0),
-        DespawnOnExit(AppState::InGame),
-    ));
-
     // three platforms: static
     for (x, y) in [(-400.0, -200.0), (0.0, -250.0), (400.0, -150.0)] {
         commands.spawn((
@@ -105,7 +99,10 @@ fn setup_zoo(mut commands: Commands, asset_server: Res<AssetServer>) {
 // Systems
 // ********
 
-fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
+fn apply_velocity(
+    mut query: Query<(&mut Transform, &Velocity), Without<PhysicalTranslation>>,
+    time: Res<Time>,
+) {
     for (mut transform, velocity) in &mut query {
         transform.translation += velocity.0.extend(0.0) * time.delta_secs();
     }
@@ -181,23 +178,5 @@ fn make_a_rock(
             Sprite::from_image(asset_server.load("sprites/rock.png")),
             DespawnOnExit(AppState::InGame),
         ));
-    }
-}
-
-fn follow_mouse(
-    window: Single<&Window>,
-    camera: Single<(&Camera, &GlobalTransform)>,
-    mut player: Single<&mut Transform, With<Player>>,
-    time: Res<Time>,
-) {
-    let (camera, camera_transform) = camera.into_inner();
-
-    if let Some(cursor_pos) = window.cursor_position()
-        && let Ok(world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_pos)
-    {
-        player.translation = player.translation.lerp(
-            world_pos.extend(player.translation.z),
-            1.0 - (-1.0 * time.delta_secs()).exp(),
-        );
     }
 }

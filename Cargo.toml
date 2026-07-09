@@ -5,16 +5,17 @@ edition = "2024"
 
 [dependencies]
 bevy = "0.19.0"
+bevy-inspector-egui = { version = "0.37", optional = true }
 
 
 # Dev only: 'cargo run --features dev' turns on dynamic linking
- [features]
- dev = ["bevy/dynamic_linking"]
+[features]
+dev = ["bevy/dynamic_linking", "dep:bevy-inspector-egui"]
 
- # light optimisation, fast recompiles
- [profile.dev]
- opt-level = 1
+# light optimisation, fast recompiles
+[profile.dev]
+opt-level = 1
 
- # dependencies: full optimisation, compile once
- [profile.dev.package."*"]
- opt-level = 3
+# dependencies: full optimisation, compile once
+[profile.dev.package."*"]
+opt-level = 3
