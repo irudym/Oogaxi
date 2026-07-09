@@ -1,3 +1,5 @@
+mod honk;
+mod input;
 mod messages;
 mod physics;
 mod player;

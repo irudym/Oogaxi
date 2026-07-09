@@ -1,6 +1,7 @@
-use std::time::Duration;
-
+use crate::input::Action;
 use bevy::prelude::*;
+use leafwing_input_manager::action_state::ActionState;
+use std::time::Duration;
 
 use crate::messages::{CopterCrashed, PassengerDelivered};
 
@@ -110,19 +111,22 @@ fn gameover_input(keys: Res<ButtonInput<KeyCode>>, mut next: ResMut<NextState<Ap
 }
 
 fn ingame_input(
-    keys: Res<ButtonInput<KeyCode>>,
+    mut players: Query<(&ActionState<Action>)>,
     paused: Res<State<IsPaused>>,
     mut next_pause: ResMut<NextState<IsPaused>>,
     mut crashed: MessageWriter<CopterCrashed>,
     mut delivered: MessageWriter<PassengerDelivered>,
 ) {
-    if keys.just_pressed(KeyCode::Escape) {
-        next_pause.set(match paused.get() {
-            IsPaused::Running => IsPaused::Paused,
-            IsPaused::Paused => IsPaused::Running,
-        });
+    for (actions) in players {
+        if actions.pressed(&Action::Pause) {
+            next_pause.set(match paused.get() {
+                IsPaused::Running => IsPaused::Paused,
+                IsPaused::Paused => IsPaused::Running,
+            });
+        }
     }
 
+    /*
     if *paused.get() == IsPaused::Running {
         if keys.just_pressed(KeyCode::KeyK) {
             crashed.write(CopterCrashed);
@@ -131,6 +135,7 @@ fn ingame_input(
             delivered.write(PassengerDelivered { fare: 25 });
         }
     }
+    */
 }
 
 fn loading_update(

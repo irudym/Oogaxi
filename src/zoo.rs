@@ -11,13 +11,7 @@ impl Plugin for ZooPlugin {
         app.add_systems(OnEnter(AppState::InGame), setup_zoo)
             .add_systems(
                 Update,
-                (
-                    panic_button,
-                    tick_lifetimes,
-                    make_a_rock,
-                    apply_velocity,
-                    screen_wrap,
-                )
+                (tick_lifetimes, make_a_rock, apply_velocity, screen_wrap)
                     .chain()
                     .run_if(in_state(IsPaused::Running)),
             );
@@ -123,29 +117,6 @@ fn screen_wrap(mut query: Query<&mut Transform, With<ScreenWrap>>, window: Singl
         }
         if p.y < -half.y {
             p.y = half.y
-        }
-    }
-}
-
-/// SPACE: panic the passengers (give them Velocity + ScreenWrap)
-/// R: calm them down (remove those components)
-fn panic_button(
-    mut commands: Commands,
-    keys: Res<ButtonInput<KeyCode>>,
-    passengers: Query<Entity, With<Passenger>>,
-) {
-    if keys.just_pressed(KeyCode::Space) {
-        for (i, entity) in passengers.iter().enumerate() {
-            let angle = i as f32 * 2.1;
-            commands
-                .entity(entity)
-                .insert((Velocity(Vec2::from_angle(angle) * 120.0), ScreenWrap));
-        }
-    }
-
-    if keys.just_pressed(KeyCode::KeyR) {
-        for entity in &passengers {
-            commands.entity(entity).remove::<(Velocity, ScreenWrap)>();
         }
     }
 }

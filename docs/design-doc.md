@@ -63,3 +63,9 @@ Menu ───────────▶ InGame ──────────�
 │                  │Esc│Esc     (IsPaused only     │ Enter
 └──────────────────┴───┴─────  exists in InGame)  ◀┘
         Running ⇄ Paused
+
+### Input pipeline
+devices → [leafwing] → ActionState (verbs) → accumulate_input → ThrustInput (intent) → FixedUpdate sim
+
+### Click execution
+gathering (leafwing, render clock) → intent (ours, plain data) → simulation (fixed clock)

@@ -1,5 +1,7 @@
+use crate::input::Action;
 use crate::states::{AppState, IsPaused};
 use bevy::prelude::*;
+use leafwing_input_manager::action_state::ActionState;
 
 /// The six numbers that are the game, reflect makes them inspectable/tunable
 #[derive(Resource, Reflect)]
@@ -45,9 +47,6 @@ pub struct PhysicalTranslation(pub Vec2);
 #[derive(Component, Default, Deref, DerefMut)]
 pub struct PreviousPhysicalTranslation(pub Vec2);
 
-#[derive(Component)]
-pub struct Stamina(f32);
-
 pub struct PhysicsPlugin;
 
 impl Plugin for PhysicsPlugin {
@@ -84,18 +83,15 @@ fn resume_clock(mut time: ResMut<Time<Virtual>>) {
 }
 
 /// Every render frame: harvest the keyboard into intent
-fn accumulate_input(keys: Res<ButtonInput<KeyCode>>, mut input: Single<&mut ThrustInput>) {
-    let up = keys.pressed(KeyCode::ArrowUp) || keys.pressed(KeyCode::Space);
-
-    input.vertical = if up { 1.0 } else { 0.0 };
-    let mut h = 0.0;
-    if keys.pressed(KeyCode::ArrowLeft) {
-        h -= 1.0;
+fn accumulate_input(mut players: Query<(&ActionState<Action>, &mut ThrustInput)>) {
+    for (actions, mut intent) in &mut players {
+        intent.vertical = if actions.pressed(&Action::Thrust) {
+            1.0
+        } else {
+            0.0
+        };
+        intent.horizontal = actions.clamped_value(&Action::Move)
     }
-    if keys.pressed(KeyCode::ArrowRight) {
-        h += 1.0;
-    }
-    input.horizontal = h;
 }
 
 /// One simulation tick, Runs 0..N times per frame; Res<Time> here is the fixed clock
