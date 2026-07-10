@@ -111,31 +111,20 @@ fn gameover_input(keys: Res<ButtonInput<KeyCode>>, mut next: ResMut<NextState<Ap
 }
 
 fn ingame_input(
-    mut players: Query<(&ActionState<Action>)>,
+    players: Query<&ActionState<Action>>,
     paused: Res<State<IsPaused>>,
     mut next_pause: ResMut<NextState<IsPaused>>,
     mut crashed: MessageWriter<CopterCrashed>,
     mut delivered: MessageWriter<PassengerDelivered>,
 ) {
-    for (actions) in players {
-        if actions.pressed(&Action::Pause) {
+    for actions in players {
+        if actions.just_pressed(&Action::Pause) {
             next_pause.set(match paused.get() {
                 IsPaused::Running => IsPaused::Paused,
                 IsPaused::Paused => IsPaused::Running,
             });
         }
     }
-
-    /*
-    if *paused.get() == IsPaused::Running {
-        if keys.just_pressed(KeyCode::KeyK) {
-            crashed.write(CopterCrashed);
-        }
-        if keys.just_pressed(KeyCode::KeyD) {
-            delivered.write(PassengerDelivered { fare: 25 });
-        }
-    }
-    */
 }
 
 fn loading_update(

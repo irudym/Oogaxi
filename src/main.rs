@@ -1,5 +1,8 @@
+mod collision;
 mod honk;
 mod input;
+mod integrity;
+mod levels;
 mod messages;
 mod physics;
 mod player;
@@ -11,9 +14,11 @@ use bevy::{prelude::*, window::PresentMode};
 
 use player::PlayerPlugin;
 use states::StatesPlugin;
-use zoo::ZooPlugin;
 
-use crate::{physics::PhysicsPlugin, score::ScorePlugin};
+use crate::{
+    collision::CollisionPlugin, input::InputPlugin, integrity::IntegrityPlugin,
+    levels::LevelPlugin, physics::PhysicsPlugin, score::ScorePlugin, zoo::ZooPlugin,
+};
 
 fn main() {
     let mut app = App::new();
@@ -32,10 +37,14 @@ fn main() {
     )
     .add_plugins((
         StatesPlugin,
-        ZooPlugin,
         ScorePlugin,
         PhysicsPlugin,
         PlayerPlugin,
+        InputPlugin,
+        LevelPlugin,
+        CollisionPlugin,
+        IntegrityPlugin,
+        ZooPlugin,
     ))
     .add_systems(Startup, spawn_camera);
     #[cfg(feature = "dev")]

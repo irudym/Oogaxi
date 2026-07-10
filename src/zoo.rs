@@ -1,5 +1,6 @@
 use crate::{
-    physics::PhysicalTranslation,
+    collision::Hazard,
+    physics::{PhysicalTranslation, PreviousPhysicalTranslation},
     states::{AppState, IsPaused},
 };
 use bevy::prelude::*;
@@ -26,13 +27,10 @@ impl Plugin for ZooPlugin {
 }
 
 #[derive(Component)]
-struct Player;
-
-#[derive(Component)]
 struct Passenger;
 
 #[derive(Component)]
-struct Platform;
+pub struct Platform;
 
 #[derive(Component)]
 struct Pterodactyl;
@@ -77,13 +75,16 @@ fn setup_zoo(mut commands: Commands, asset_server: Res<AssetServer>) {
     // eight pterodactyls drifting with different velocities
     for i in 0..8 {
         let angle = i as f32 * std::f32::consts::TAU / 8.0;
-
+        let start = Vec3::new(0.0, 200.0, 8.0);
         commands.spawn((
             Pterodactyl,
             ScreenWrap,
             Velocity(Vec2::from_angle(angle) * 120.0),
             Sprite::from_image(asset_server.load("sprites/ptero.png")),
-            Transform::from_xyz(0.0, 100.0, 8.0),
+            Transform::from_translation(start),
+            Hazard { radius: 16.0 },
+            PhysicalTranslation(start.truncate()),
+            PreviousPhysicalTranslation(start.truncate()),
             DespawnOnExit(AppState::InGame),
         ));
     }
@@ -141,12 +142,16 @@ fn make_a_rock(
     asset_server: Res<AssetServer>,
 ) {
     if keys.just_pressed(KeyCode::KeyY) {
+        let start = Vec3::new(100.0, 100.0, 8.0);
         commands.spawn((
             Rock,
-            Transform::from_xyz(100.0, 300.0, 8.0),
+            Transform::from_translation(start),
             Velocity(Vec2::new(0.0, -200.0)),
             LifeTime(Timer::from_seconds(1.0, TimerMode::Once)),
             Sprite::from_image(asset_server.load("sprites/rock.png")),
+            Hazard { radius: 12.0 },
+            PhysicalTranslation(start.truncate()),
+            PreviousPhysicalTranslation(start.truncate()),
             DespawnOnExit(AppState::InGame),
         ));
     }

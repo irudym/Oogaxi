@@ -1,5 +1,7 @@
 use crate::{
+    collision::Collider,
     input::input_map_for,
+    integrity::Integrity,
     physics::{PhysicalTranslation, PreviousPhysicalTranslation, ThrustInput, Velocity},
     states::AppState,
 };
@@ -27,12 +29,16 @@ fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
         Player,
         PlayerId(player_id),
         input_map_for(player_id),
-        Sprite::from_image(asset_server.load("sprites/copter.png")),
+        Sprite::from_image(asset_server.load("sprites/copter_32.png")),
         Transform::from_xyz(start.x, start.y, 0.0),
+        Collider {
+            half: Vec2::new(14.0, 16.0),
+        },
         Velocity::default(),
         ThrustInput::default(),
         PhysicalTranslation(start),
         PreviousPhysicalTranslation(start),
+        Integrity(100.0),
         DespawnOnExit(AppState::InGame),
     ));
 }

@@ -1,3 +1,4 @@
+use crate::collision::Grounded;
 use crate::input::Action;
 use crate::states::{AppState, IsPaused};
 use bevy::prelude::*;
@@ -12,7 +13,14 @@ pub struct FlightConfig {
     pub horizontal_accel: f32, // px/s2
     pub drag: f32,             // 1/s, exponential decay rate
     pub max_speed: f32,        // px/s
-    pub floor_y: f32,
+    pub max_landing_vy: f32,   // fastest survivable vertical touchdown
+    pub max_landing_vx: f32,   // fastest survivable lateral slide on touchdown
+    pub wall_crash_speed: f32, // side/ceiling impact above this fatal
+    pub ground_drag: f32,      // extra vs decay while Grounded (1/s)
+    pub integrity_max: f32,
+    pub damage_k: f32,        // integrity lost per px/s of severity
+    pub hazard_severity: f32, // a flying objects strike
+    pub invuln_secs: f32,     // i-frames after any damage
 }
 
 impl Default for FlightConfig {
@@ -23,9 +31,24 @@ impl Default for FlightConfig {
             horizontal_accel: 700.0,
             drag: 1.8,
             max_speed: 800.0,
-            floor_y: -320.0,
+            max_landing_vx: 120.0,
+            max_landing_vy: 220.0,
+            wall_crash_speed: 450.0,
+            ground_drag: 6.0,
+            integrity_max: 100.0,
+            damage_k: 0.15,
+            hazard_severity: 400.0,
+            invuln_secs: 0.8,
         }
     }
+}
+
+/// FixedUpdate pipeline stages. Configured once here
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum SimSet {
+    Forces,  // velocity changes
+    Move,    // position integration + collision resolution
+    Contact, // game reaction to contacts
 }
 
 /// Shared by anything that moves under simulation
@@ -53,6 +76,13 @@ impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<FlightConfig>()
             .init_resource::<FlightConfig>()
+            .configure_sets(
+                FixedUpdate,
+                (SimSet::Forces, SimSet::Move, SimSet::Contact)
+                    .chain()
+                    .run_if(in_state(IsPaused::Running)),
+            )
+            .add_systems(FixedUpdate, apply_forces.in_set(SimSet::Forces))
             .add_systems(
                 RunFixedMainLoop,
                 (
@@ -63,10 +93,6 @@ impl Plugin for PhysicsPlugin {
                         .in_set(RunFixedMainLoopSystems::AfterFixedMainLoop)
                         .run_if(in_state(AppState::InGame)),
                 ),
-            )
-            .add_systems(
-                FixedUpdate,
-                advanced_physics.run_if(in_state(IsPaused::Running)),
             )
             // Pause the clock
             .add_systems(OnEnter(IsPaused::Paused), pause_clock)
@@ -94,6 +120,28 @@ fn accumulate_input(mut players: Query<(&ActionState<Action>, &mut ThrustInput)>
     }
 }
 
+///
+fn apply_forces(
+    config: Res<FlightConfig>,
+    time: Res<Time>,
+    mut query: Query<(
+        &mut Velocity,
+        &ThrustInput,
+        Has<Grounded>,
+        //&mut PhysicalTranslation,
+        //&mut PreviousPhysicalTranslation,
+    )>,
+) {
+    let dt = time.delta_secs();
+    for (mut vel, input, grounded) in &mut query {
+        vel.0 = step_velocity(vel.0, input.vertical, input.horizontal, &config, dt);
+        if grounded {
+            // the copter settles instead of ice-skating along platforms
+            vel.x *= (-config.ground_drag * dt).exp();
+        }
+    }
+}
+
 /// One simulation tick, Runs 0..N times per frame; Res<Time> here is the fixed clock
 fn advanced_physics(
     config: Res<FlightConfig>,
@@ -114,12 +162,6 @@ fn advanced_physics(
 
         // Semi-implicit: position integrates the new velocity
         pos.0 += vel.0 * dt;
-
-        // temp
-        if pos.y < config.floor_y {
-            pos.y = config.floor_y;
-            vel.y = vel.y.max(0.0); // in case its neg
-        }
     }
 }
 

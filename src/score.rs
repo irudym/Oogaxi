@@ -1,4 +1,6 @@
+use crate::integrity::Integrity;
 use crate::messages::{CopterCrashed, PassengerDelivered};
+use crate::player::Player;
 use crate::states::AppState;
 use bevy::prelude::*;
 
@@ -7,6 +9,9 @@ pub struct Score(pub u32);
 
 #[derive(Component)]
 struct ScoreHud;
+
+#[derive(Component)]
+struct IntegrityHud;
 
 pub struct ScorePlugin;
 
@@ -21,7 +26,8 @@ impl Plugin for ScorePlugin {
                 (
                     score_deliveries,
                     end_game_on_crash,
-                    update_hud.run_if(resource_changed::<Score>),
+                    update_score_hud.run_if(resource_changed::<Score>),
+                    update_integrity_hud,
                 )
                     .run_if(in_state(AppState::InGame)),
             );
@@ -42,6 +48,16 @@ fn spawn_hud(mut commands: Commands) {
         },
         DespawnOnExit(AppState::InGame),
     ));
+    commands.spawn((
+        IntegrityHud,
+        Text::new("Integrity: 100"),
+        TextFont {
+            font_size: FontSize::Px(24.0),
+            ..default()
+        },
+        Transform::from_xyz(-200.0, -200.0, 0.0),
+        DespawnOnExit(AppState::InGame),
+    ));
 }
 
 fn score_deliveries(mut deliveries: MessageReader<PassengerDelivered>, mut score: ResMut<Score>) {
@@ -50,8 +66,15 @@ fn score_deliveries(mut deliveries: MessageReader<PassengerDelivered>, mut score
     }
 }
 
-fn update_hud(score: Res<Score>, mut hud: Single<&mut Text, With<ScoreHud>>) {
-    hud.0 = format!("Score: {}", score.0);
+fn update_score_hud(score: Res<Score>, mut score_hud: Single<&mut Text, With<ScoreHud>>) {
+    score_hud.0 = format!("Score: {}", score.0);
+}
+
+fn update_integrity_hud(
+    mut int_hud: Single<&mut Text, With<IntegrityHud>>,
+    player: Single<&Integrity, With<Player>>,
+) {
+    int_hud.0 = format!("Integrity: {}", player.0.floor());
 }
 
 fn end_game_on_crash(
