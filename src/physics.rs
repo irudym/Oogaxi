@@ -144,29 +144,6 @@ fn apply_forces(
     }
 }
 
-/// One simulation tick, Runs 0..N times per frame; Res<Time> here is the fixed clock
-fn advanced_physics(
-    config: Res<FlightConfig>,
-    time: Res<Time>,
-    mut query: Query<(
-        &mut PhysicalTranslation,
-        &mut PreviousPhysicalTranslation,
-        &mut Velocity,
-        &ThrustInput,
-    )>,
-) {
-    let dt = time.delta_secs();
-    for (mut pos, mut prev, mut vel, input) in &mut query {
-        prev.0 = pos.0;
-
-        // Held intent: every tick this frame reads the same sampled value
-        vel.0 = step_velocity(vel.0, input.vertical, input.horizontal, &config, dt);
-
-        // Semi-implicit: position integrates the new velocity
-        pos.0 += vel.0 * dt;
-    }
-}
-
 /// all velocity math
 fn step_velocity(
     mut v: Vec2,
@@ -240,7 +217,7 @@ mod tests {
         for tick in 0..640 {
             let held = if tick % PERIOD < on_ticks { 1.0 } else { 0.0 };
             v = step_velocity(v, held, 0.0, &config, DT);
-            y += v.y + DT;
+            y += v.y * DT;
         }
 
         // Duty quantization (on_ticks is rounded) allows some drift

@@ -3,11 +3,9 @@ use crate::{
     levels::LevelOwned,
     physics::{PhysicalTranslation, PreviousPhysicalTranslation, Velocity},
     states::{AppState, IsPaused},
+    z::z,
 };
 use bevy::prelude::*;
-
-#[derive(Default, Component)]
-pub struct PlayerSpawnPoint;
 
 pub struct ZooPlugin;
 
@@ -15,7 +13,11 @@ impl Plugin for ZooPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (tick_lifetimes, make_a_rock, apply_velocity, screen_wrap)
+            (
+                tick_lifetimes,
+                make_a_rock,
+                /* apply_velocity, */ screen_wrap,
+            )
                 .chain()
                 .run_if(in_state(IsPaused::Running)),
         );
@@ -50,45 +52,6 @@ struct LifeTime(Timer);
 #[derive(Component)]
 struct Rock;
 
-fn setup_zoo(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // three platforms: static
-    for (x, y) in [(-400.0, -200.0), (0.0, -250.0), (400.0, -150.0)] {
-        commands.spawn((
-            Platform,
-            Sprite::from_image(asset_server.load("sprites/platform.png")),
-            Transform::from_xyz(x, y, 1.0),
-            DespawnOnExit(AppState::InGame),
-        ));
-    }
-
-    // a passenger waiting on each platform
-    for (x, y) in [(-400.0, -50.0), (0.0, -100.0), (400.0, -20.0)] {
-        commands.spawn((
-            Passenger,
-            Sprite::from_image(asset_server.load("sprites/passenger.png")),
-            Transform::from_xyz(x, y, 0.5),
-            DespawnOnExit(AppState::InGame),
-        ));
-    }
-
-    // eight pterodactyls drifting with different velocities
-    for i in 0..8 {
-        let angle = i as f32 * std::f32::consts::TAU / 8.0;
-        let start = Vec3::new(0.0, 200.0, 8.0);
-        commands.spawn((
-            Pterodactyl,
-            ScreenWrap,
-            Velocity(Vec2::from_angle(angle) * 120.0),
-            Sprite::from_image(asset_server.load("sprites/ptero.png")),
-            Transform::from_translation(start),
-            Hazard { radius: 16.0 },
-            PhysicalTranslation(start.truncate()),
-            PreviousPhysicalTranslation(start.truncate()),
-            DespawnOnExit(AppState::InGame),
-        ));
-    }
-}
-
 pub fn spawn_pterodactyl(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
@@ -97,10 +60,9 @@ pub fn spawn_pterodactyl(
 ) {
     commands.spawn((
         Pterodactyl,
-        ScreenWrap,
         Velocity(vel),
         Sprite::from_image(asset_server.load("sprites/ptero.png")),
-        Transform::from_translation(pos.extend(1.0)),
+        Transform::from_translation(pos.extend(z::HAZARD)),
         Hazard { radius: 16.0 },
         PhysicalTranslation(pos),
         PreviousPhysicalTranslation(pos),
@@ -118,7 +80,7 @@ pub fn spawn_platform(
     commands.spawn((
         Platform,
         Sprite::from_image(asset_server.load("sprites/platform.png")),
-        Transform::from_translation(pos.extend(1.0)),
+        Transform::from_translation(pos.extend(z::PLATFORM)),
         Collider { half },
         LevelOwned,
         DespawnOnExit(AppState::InGame),
@@ -177,7 +139,7 @@ fn make_a_rock(
     asset_server: Res<AssetServer>,
 ) {
     if keys.just_pressed(KeyCode::KeyY) {
-        let start = Vec3::new(100.0, 100.0, 8.0);
+        let start = Vec3::new(100.0, 100.0, z::HAZARD);
         commands.spawn((
             Rock,
             Transform::from_translation(start),

@@ -1,5 +1,5 @@
 use crate::physics::FlightConfig;
-use bevy::{material::key, prelude::*};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*};
 
 use crate::states::AppState;
@@ -145,7 +145,6 @@ fn rebuild_tile_grid(
     projects: Query<&LdtkProjectHandle>,
     project_assets: Res<Assets<LdtkProject>>,
     mut commands: Commands,
-    mut camera: Single<&mut Transform, With<Camera2d>>,
 ) {
     for event in level_events.read() {
         let LevelEvent::Spawned(level_id) = event else {
@@ -170,8 +169,10 @@ fn rebuild_tile_grid(
             walls.iter().copied(),
         ));
 
-        camera.translation.x = level.px_wid as f32 / 2.0;
-        camera.translation.y = level.px_hei as f32 / 2.0;
+        commands.insert_resource(crate::camera::LevelBounds {
+            min: Vec2::ZERO,
+            max: Vec2::new(level.px_wid as f32, level.px_hei as f32),
+        });
     }
 }
 
@@ -183,25 +184,8 @@ fn dev_level_keys(keys: Res<ButtonInput<KeyCode>>, mut selection: ResMut<LevelSe
     if keys.just_pressed(KeyCode::BracketRight) {
         indices.level += 1;
     }
-    if keys.just_pressed(KeyCode::BracketLeft) {
+    if keys.just_pressed(KeyCode::BracketLeft) && indices.level > 0 {
         indices.level -= 1;
-    }
-}
-
-fn spawn_cave_visuals(mut commands: Commands, grid: Res<TileGrid>) {
-    for ty in 0..grid.rows {
-        for tx in 0..grid.cols {
-            if !grid.is_solid(tx, ty) {
-                continue;
-            }
-
-            let (min, _) = grid.tile_bounds(tx, ty);
-            commands.spawn((
-                Sprite::from_color(Color::srgb(0.35, 0.32, 0.28), Vec2::splat(TILE)),
-                Transform::from_translation((min + Vec2::splat(TILE / 2.0)).extend(0.0)),
-                DespawnOnExit(AppState::InGame),
-            ));
-        }
     }
 }
 

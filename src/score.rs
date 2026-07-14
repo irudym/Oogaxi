@@ -46,6 +46,12 @@ fn spawn_hud(mut commands: Commands) {
             font_size: FontSize::Px(24.0),
             ..default()
         },
+        Node {
+            position_type: PositionType::Absolute,
+            top: px(8.0),
+            left: px(8.0),
+            ..default()
+        },
         DespawnOnExit(AppState::InGame),
     ));
     commands.spawn((
@@ -55,7 +61,12 @@ fn spawn_hud(mut commands: Commands) {
             font_size: FontSize::Px(24.0),
             ..default()
         },
-        Transform::from_xyz(-200.0, -200.0, 0.0),
+        Node {
+            position_type: PositionType::Absolute,
+            top: px(36.0),
+            left: px(8.0),
+            ..default()
+        },
         DespawnOnExit(AppState::InGame),
     ));
 }
@@ -72,9 +83,11 @@ fn update_score_hud(score: Res<Score>, mut score_hud: Single<&mut Text, With<Sco
 
 fn update_integrity_hud(
     mut int_hud: Single<&mut Text, With<IntegrityHud>>,
-    player: Single<&Integrity, With<Player>>,
+    player: Query<&Integrity, (With<Player>, Changed<Integrity>)>,
 ) {
-    int_hud.0 = format!("Integrity: {}", player.0.floor());
+    if let Ok(integrity) = player.single() {
+        int_hud.0 = format!("Integrity: {}", integrity.0);
+    }
 }
 
 fn end_game_on_crash(

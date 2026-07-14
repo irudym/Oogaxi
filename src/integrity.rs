@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
 use crate::{
-    integrity,
     messages::{CopterCrashed, CopterDamaged},
     physics::FlightConfig,
     player::Player,

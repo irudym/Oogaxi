@@ -1,3 +1,4 @@
+mod camera;
 mod collision;
 mod honk;
 mod input;
@@ -8,20 +9,26 @@ mod physics;
 mod player;
 mod score;
 mod states;
+mod z;
 mod zoo;
 
-use bevy::camera::ScalingMode;
 use bevy::{prelude::*, window::PresentMode};
 
-use player::PlayerPlugin;
 use states::StatesPlugin;
 
+use crate::camera::CameraPlugin;
+use crate::levels::TILE;
+use crate::physics::FlightConfig;
 use crate::{
     collision::CollisionPlugin, input::InputPlugin, integrity::IntegrityPlugin,
     levels::LevelPlugin, physics::PhysicsPlugin, score::ScorePlugin, zoo::ZooPlugin,
 };
 
 fn main() {
+    // check tunneling
+    let cfg = FlightConfig::default();
+    debug_assert!(cfg.max_speed / 64.0 < TILE);
+
     let mut app = App::new();
     app.add_plugins(
         DefaultPlugins
@@ -30,6 +37,7 @@ fn main() {
                     title: "Oogaxi: Through the Taxiverse".into(),
                     resolution: (1280, 960).into(),
                     present_mode: PresentMode::AutoVsync,
+                    resizable: false,
                     ..default()
                 }),
                 ..default()
@@ -37,6 +45,7 @@ fn main() {
             .set(ImagePlugin::default_nearest()),
     )
     .add_plugins((
+        CameraPlugin,
         StatesPlugin,
         ScorePlugin,
         PhysicsPlugin,
@@ -45,8 +54,7 @@ fn main() {
         CollisionPlugin,
         IntegrityPlugin,
         ZooPlugin,
-    ))
-    .add_systems(Startup, spawn_camera);
+    ));
     #[cfg(feature = "dev")]
     {
         use bevy_inspector_egui::bevy_egui::EguiPlugin;
@@ -56,19 +64,4 @@ fn main() {
             .add_plugins(ResourceInspectorPlugin::<physics::FlightConfig>::default());
     }
     app.run();
-}
-
-fn spawn_camera(mut commands: Commands) {
-    commands.spawn((
-        Camera2d,
-        Projection::Orthographic(OrthographicProjection {
-            scaling_mode: ScalingMode::Fixed {
-                width: 640.0,
-                height: 480.0,
-            },
-            ..OrthographicProjection::default_2d()
-        }),
-    ));
-
-    // commands.spawn(Camera2d);
 }
