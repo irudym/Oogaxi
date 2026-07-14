@@ -1,21 +1,24 @@
 use crate::{
-    collision::Hazard,
-    physics::{PhysicalTranslation, PreviousPhysicalTranslation},
+    collision::{Collider, Hazard},
+    levels::LevelOwned,
+    physics::{PhysicalTranslation, PreviousPhysicalTranslation, Velocity},
     states::{AppState, IsPaused},
 };
 use bevy::prelude::*;
+
+#[derive(Default, Component)]
+pub struct PlayerSpawnPoint;
 
 pub struct ZooPlugin;
 
 impl Plugin for ZooPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(AppState::InGame), setup_zoo)
-            .add_systems(
-                Update,
-                (tick_lifetimes, make_a_rock, apply_velocity, screen_wrap)
-                    .chain()
-                    .run_if(in_state(IsPaused::Running)),
-            );
+        app.add_systems(
+            Update,
+            (tick_lifetimes, make_a_rock, apply_velocity, screen_wrap)
+                .chain()
+                .run_if(in_state(IsPaused::Running)),
+        );
         app.add_observer(|add: On<Add, Passenger>| {
             info!("A passenger appeared: {}", add.entity);
         });
@@ -29,15 +32,11 @@ impl Plugin for ZooPlugin {
 #[derive(Component)]
 struct Passenger;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Platform;
 
 #[derive(Component)]
 struct Pterodactyl;
-
-/// Data component: velocity in world units/second
-#[derive(Component)]
-struct Velocity(Vec2);
 
 /// Capability component: wrap around screen edges when out of bounds
 #[derive(Component)]
@@ -88,6 +87,42 @@ fn setup_zoo(mut commands: Commands, asset_server: Res<AssetServer>) {
             DespawnOnExit(AppState::InGame),
         ));
     }
+}
+
+pub fn spawn_pterodactyl(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    pos: Vec2,
+    vel: Vec2,
+) {
+    commands.spawn((
+        Pterodactyl,
+        ScreenWrap,
+        Velocity(vel),
+        Sprite::from_image(asset_server.load("sprites/ptero.png")),
+        Transform::from_translation(pos.extend(1.0)),
+        Hazard { radius: 16.0 },
+        PhysicalTranslation(pos),
+        PreviousPhysicalTranslation(pos),
+        LevelOwned,
+        DespawnOnExit(AppState::InGame),
+    ));
+}
+
+pub fn spawn_platform(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    pos: Vec2,
+    half: Vec2,
+) {
+    commands.spawn((
+        Platform,
+        Sprite::from_image(asset_server.load("sprites/platform.png")),
+        Transform::from_translation(pos.extend(1.0)),
+        Collider { half },
+        LevelOwned,
+        DespawnOnExit(AppState::InGame),
+    ));
 }
 
 // ********

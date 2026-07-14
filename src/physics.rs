@@ -1,5 +1,6 @@
 use crate::collision::Grounded;
 use crate::input::Action;
+use crate::levels::TileGrid;
 use crate::states::{AppState, IsPaused};
 use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
@@ -52,7 +53,7 @@ pub enum SimSet {
 }
 
 /// Shared by anything that moves under simulation
-#[derive(Component, Default, Deref, DerefMut)]
+#[derive(Component, Default, Deref, DerefMut, Debug)]
 pub struct Velocity(pub Vec2);
 
 /// Input gathered per RENDER frame, consumed by SIMULATION ticks
@@ -80,7 +81,8 @@ impl Plugin for PhysicsPlugin {
                 FixedUpdate,
                 (SimSet::Forces, SimSet::Move, SimSet::Contact)
                     .chain()
-                    .run_if(in_state(IsPaused::Running)),
+                    .run_if(in_state(IsPaused::Running))
+                    .run_if(resource_exists::<TileGrid>),
             )
             .add_systems(FixedUpdate, apply_forces.in_set(SimSet::Forces))
             .add_systems(

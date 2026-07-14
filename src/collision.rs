@@ -10,7 +10,7 @@ use crate::zoo::Platform;
 /// Keep resting bodies a hair outside surface (avoid float re-penetration)
 const SKIN: f32 = 0.01;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Collider {
     pub half: Vec2,
 } // half extent, 80% of sprite
@@ -18,7 +18,7 @@ pub struct Collider {
 #[derive(Component)]
 pub struct Grounded;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Hazard {
     pub radius: f32,
 } // circle collider for lethal things

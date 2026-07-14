@@ -10,6 +10,7 @@ mod score;
 mod states;
 mod zoo;
 
+use bevy::camera::ScalingMode;
 use bevy::{prelude::*, window::PresentMode};
 
 use player::PlayerPlugin;
@@ -27,7 +28,7 @@ fn main() {
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "Oogaxi: Through the Taxiverse".into(),
-                    resolution: (1280, 720).into(),
+                    resolution: (1280, 960).into(),
                     present_mode: PresentMode::AutoVsync,
                     ..default()
                 }),
@@ -39,7 +40,6 @@ fn main() {
         StatesPlugin,
         ScorePlugin,
         PhysicsPlugin,
-        PlayerPlugin,
         InputPlugin,
         LevelPlugin,
         CollisionPlugin,
@@ -59,5 +59,16 @@ fn main() {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn(Camera2d);
+    commands.spawn((
+        Camera2d,
+        Projection::Orthographic(OrthographicProjection {
+            scaling_mode: ScalingMode::Fixed {
+                width: 640.0,
+                height: 480.0,
+            },
+            ..OrthographicProjection::default_2d()
+        }),
+    ));
+
+    // commands.spawn(Camera2d);
 }

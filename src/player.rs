@@ -2,7 +2,10 @@ use crate::{
     collision::Collider,
     input::input_map_for,
     integrity::Integrity,
-    physics::{PhysicalTranslation, PreviousPhysicalTranslation, ThrustInput, Velocity},
+    levels::LevelOwned,
+    physics::{
+        FlightConfig, PhysicalTranslation, PreviousPhysicalTranslation, ThrustInput, Velocity,
+    },
     states::AppState,
 };
 use bevy::prelude::*;
@@ -39,6 +42,38 @@ fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
         PhysicalTranslation(start),
         PreviousPhysicalTranslation(start),
         Integrity(100.0),
+        DespawnOnExit(AppState::InGame),
+    ));
+}
+
+pub fn spawn_player(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    pos: Vec2,
+    cfg: &FlightConfig,
+) {
+    let player_id: u8 = 1;
+    info!(
+        "Spawn player with position: {} and velocity: {:?} ",
+        pos,
+        Velocity::default()
+    );
+    // the player: a marker, sprite, position
+    commands.spawn((
+        Player,
+        PlayerId(player_id),
+        input_map_for(player_id),
+        Sprite::from_image(asset_server.load("sprites/copter_32.png")),
+        Transform::from_xyz(pos.x, pos.y, 0.0),
+        Collider {
+            half: Vec2::new(14.0, 16.0),
+        },
+        Velocity::default(),
+        ThrustInput::default(),
+        PhysicalTranslation(pos),
+        PreviousPhysicalTranslation(pos),
+        Integrity(cfg.integrity_max),
+        LevelOwned,
         DespawnOnExit(AppState::InGame),
     ));
 }
