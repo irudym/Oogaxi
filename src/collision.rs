@@ -1,3 +1,4 @@
+use bevy::ecs::system::command;
 use bevy::prelude::*;
 
 use crate::levels::TileGrid;
@@ -216,7 +217,7 @@ fn move_and_collide(
 
         let hit_x = ghit || phit.is_some();
         if hit_x {
-            let over = vel.x.abs() - cfg.wall_crash_speed;
+            let over = (vel.x.abs() - cfg.wall_crash_speed).max(0.0);
             if over > 0.0 {
                 damaged.write(CopterDamaged { severity: over });
             }
@@ -252,6 +253,20 @@ fn move_and_collide(
                     }
                 }
             }
+        } else if hit_y {
+            // ceiling bonk: stop, and hard ones hurt (mirrors X-axis logic)
+
+            let over = (impact.y.abs() - cfg.wall_crash_speed).max(0.0);
+            if over > 0.0 {
+                damaged.write(CopterDamaged {
+                    severity: over.abs(),
+                });
+            }
+            vel.y = 0.0;
+        } else if was_grounded {
+            //no vertical contact this tick and the player was grounded -> airborne:
+            // thrust lifter the copter, or slides off an edge
+            commands.entity(entity).remove::<Grounded>();
         }
     }
 }

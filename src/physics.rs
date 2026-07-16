@@ -34,7 +34,7 @@ impl Default for FlightConfig {
             max_speed: 800.0,
             max_landing_vx: 120.0,
             max_landing_vy: 220.0,
-            wall_crash_speed: 450.0,
+            wall_crash_speed: 200.0,
             ground_drag: 6.0,
             integrity_max: 100.0,
             damage_k: 0.15,

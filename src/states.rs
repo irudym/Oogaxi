@@ -1,7 +1,6 @@
 use crate::input::Action;
 use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
-use std::time::Duration;
 
 use crate::messages::{CopterCrashed, PassengerDelivered};
 
@@ -23,9 +22,6 @@ pub enum IsPaused {
     Paused,
 }
 
-#[derive(Resource, Default)]
-struct LoadingTimer(Timer);
-
 pub struct StatesPlugin;
 
 impl Plugin for StatesPlugin {
@@ -38,20 +34,18 @@ impl Plugin for StatesPlugin {
             .add_systems(OnEnter(IsPaused::Paused), setup_pause_overlay)
             .add_systems(OnEnter(AppState::Loading), setup_loading)
             // input routers, gated per state
-            .init_resource::<LoadingTimer>()
             .add_systems(
                 Update,
                 (
                     menu_input.run_if(in_state(AppState::Menu)),
                     gameover_input.run_if(in_state(AppState::GameOver)),
                     ingame_input.run_if(in_state(AppState::InGame)),
-                    loading_update.run_if(in_state(AppState::Loading)),
                 ),
             );
     }
 }
 
-fn setup_loading(mut commands: Commands, mut timer: ResMut<LoadingTimer>) {
+fn setup_loading(mut commands: Commands) {
     commands.spawn((
         Text::new("Loading..."),
         TextFont {
@@ -60,8 +54,6 @@ fn setup_loading(mut commands: Commands, mut timer: ResMut<LoadingTimer>) {
         },
         DespawnOnExit(AppState::Loading),
     ));
-    timer.0.set_duration(Duration::from_secs(1));
-    timer.0.reset();
 }
 
 fn setup_menu_screen(mut commands: Commands) {
@@ -124,17 +116,5 @@ fn ingame_input(
                 IsPaused::Paused => IsPaused::Running,
             });
         }
-    }
-}
-
-fn loading_update(
-    mut timer: ResMut<LoadingTimer>,
-    mut next: ResMut<NextState<AppState>>,
-    time: Res<Time>,
-) {
-    timer.0.tick(time.delta());
-
-    if timer.0.is_finished() {
-        next.set(AppState::InGame);
     }
 }

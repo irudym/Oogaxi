@@ -1,3 +1,5 @@
+mod animations;
+mod assets;
 mod camera;
 mod collision;
 mod honk;
@@ -8,14 +10,18 @@ mod messages;
 mod physics;
 mod player;
 mod score;
+mod spritesheet;
 mod states;
 mod z;
 mod zoo;
 
 use bevy::{prelude::*, window::PresentMode};
 
+use bevy_common_assets::json::JsonAssetPlugin;
 use states::StatesPlugin;
 
+use crate::animations::AnimationPlugin;
+use crate::assets::AssetsPlugin;
 use crate::camera::CameraPlugin;
 use crate::levels::TILE;
 use crate::physics::FlightConfig;
@@ -54,6 +60,8 @@ fn main() {
         CollisionPlugin,
         IntegrityPlugin,
         ZooPlugin,
+        AnimationPlugin,
+        AssetsPlugin,
     ));
     #[cfg(feature = "dev")]
     {

@@ -1,4 +1,5 @@
 use crate::{
+    assets::GameAssets,
     collision::Collider,
     input::input_map_for,
     integrity::Integrity,
@@ -10,6 +11,7 @@ use crate::{
     z::z,
 };
 use bevy::prelude::*;
+use serde::de;
 
 #[derive(Component)]
 pub struct Player;
@@ -27,7 +29,7 @@ impl Plugin for PlayerPlugin {
 
 pub fn spawn_player(
     commands: &mut Commands,
-    asset_server: &Res<AssetServer>,
+    assets: &Res<GameAssets>,
     pos: Vec2,
     cfg: &FlightConfig,
 ) {
@@ -42,7 +44,16 @@ pub fn spawn_player(
         Player,
         PlayerId(player_id),
         input_map_for(player_id),
-        Sprite::from_image(asset_server.load("sprites/copter_32.png")),
+        Sprite {
+            image: assets.copter.image.clone(),
+            texture_atlas: Some(TextureAtlas {
+                layout: assets.copter.layout.clone(),
+                index: 0,
+            }),
+            ..default()
+        },
+        assets.copter.clip("idle"),
+        crate::animations::AnimState::default(),
         Transform::from_xyz(pos.x, pos.y, z::PLAYER),
         Collider {
             half: Vec2::new(14.0, 16.0),

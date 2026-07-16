@@ -1,0 +1,68 @@
+GIMP Palette
+Name: OOGA-64
+Columns: 8
+# Oogaxi: Through the Taxiverse — master palette
+ 22  18  29	basalt-0
+ 46  39  51	basalt-1
+ 74  65  73	basalt-2
+102  92  96	basalt-3
+131 122 121	basalt-4
+160 152 146	basalt-5
+ 11   8  18	void-0
+ 21  15  28	void-1
+ 34  23  49	void-2
+ 74  46  36	sand-0
+110  70  48	sand-1
+147  97  60	sand-2
+184 131  77	sand-3
+217 168  98	sand-4
+242 206 135	sand-5
+ 58  36  24	wood-0
+ 87  53  33	wood-1
+117  73  43	wood-2
+150  96  56	wood-3
+181 123  72	wood-4
+ 42  51  26	moss-0
+ 62  77  34	moss-1
+ 86 104  44	moss-2
+113 133  58	moss-3
+143 163  76	moss-4
+ 20  66  31	jungle-0
+ 30  94  42	jungle-1
+ 46 127  56	jungle-2
+ 70 162  68	jungle-3
+108 197  90	jungle-4
+151 224 119	jungle-5
+ 85 107  33	grass-0
+111 138  42	grass-1
+140 171  56	grass-2
+ 63 168 216	sky-0
+111 195 228	sky-1
+165 220 234	sky-2
+232 217 168	sky-3
+242 190 138	sky-4
+ 18  59  74	water-0
+ 26  85 102	water-1
+ 37 113 132	water-2
+ 52 143 160	water-3
+ 79 179 191	water-4
+223 243 240	foam
+242 201 154	skin-0
+214 154 107	skin-1
+169 107  71	skin-2
+110  63  44	skin-3
+ 46  31  26	hair-dark
+232 200 107	hair-blonde
+255 201  60	fare-gold
+201 138  30	gold-shade
+255 107  74	danger-hi
+217  58  43	danger-lo
+126 210 107	food-heal
+244 234 210	ui-cream
+ 36  28  42	ui-ink
+255 233 176	torch-core
+255 164  60	torch-flame
+255  95  46	ember
+255 210  74	lava-glow
+223 243 255	lightning
+154 230 255	firefly

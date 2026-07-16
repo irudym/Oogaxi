@@ -1,4 +1,4 @@
-use crate::physics::FlightConfig;
+use crate::{assets::GameAssets, physics::FlightConfig};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*};
 
@@ -114,7 +114,8 @@ impl Plugin for LevelPlugin {
                 PostUpdate,
                 (despawn_level_owned, convert_editor_entities)
                     .chain()
-                    .after(TransformSystems::Propagate),
+                    .after(TransformSystems::Propagate)
+                    .run_if(resource_exists::<GameAssets>),
             )
             .add_systems(Update, (rebuild_tile_grid, dev_level_keys))
             .add_systems(OnExit(AppState::InGame), remove_tile_grid);
@@ -193,12 +194,13 @@ fn convert_editor_entities(
     mut commands: Commands,
     instances: Query<(Entity, &EntityInstance, &GlobalTransform), Added<EntityInstance>>,
     asset_server: Res<AssetServer>,
+    assets: Res<GameAssets>,
     cfg: Res<FlightConfig>,
 ) {
     for (editor_entity, inst, transform) in &instances {
         let pos = transform.translation().truncate();
         match inst.identifier.as_str() {
-            "PlayerSpawn" => crate::player::spawn_player(&mut commands, &asset_server, pos, &cfg),
+            "PlayerSpawn" => crate::player::spawn_player(&mut commands, &assets, pos, &cfg),
             "Platform" => {
                 let half = Vec2::new(inst.width as f32, inst.height as f32) * 0.5 * 0.8;
                 crate::zoo::spawn_platform(&mut commands, &asset_server, pos, half);
