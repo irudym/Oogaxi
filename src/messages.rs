@@ -10,10 +10,15 @@ pub struct PassengerDelivered {
 
 #[derive(Message, Debug)]
 pub struct Landed {
-    pub platform: Option<Entity>,
+    pub at: Vec2,
 }
 
 #[derive(Message, Debug)]
 pub struct CopterDamaged {
     pub severity: f32,
+}
+
+#[derive(Message)]
+pub struct Honked {
+    pub at: Vec2,
 }

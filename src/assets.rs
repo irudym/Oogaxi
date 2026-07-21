@@ -11,6 +11,8 @@ use bevy_common_assets::json::JsonAssetPlugin;
 #[derive(Resource)]
 pub struct GameAssets {
     pub copter: SpriteSheet,
+    pub signs: SpriteSheet,
+    pub passenger: SpriteSheet,
     //pub copter_layout: Handle<TextureAtlasLayout>,
     /*
     pub ptero_sheet: Handle<Image>,
@@ -25,6 +27,8 @@ pub struct GameAssets {
 #[derive(Resource)]
 struct PendingSheets {
     copter: Handle<Spritesheet>,
+    signs: Handle<Spritesheet>,
+    passenger: Handle<Spritesheet>,
     // TODO: other sprites go here
 }
 
@@ -58,7 +62,9 @@ impl Plugin for AssetsPlugin {
 
 fn start_loading(mut commands: Commands, assets: Res<AssetServer>) {
     commands.insert_resource(PendingSheets {
-        copter: assets.load("sprites/copter.sheet.json"),
+        copter: assets.load("sprites/copter42.sheet.json"),
+        signs: assets.load("sprites/signs.sheet.json"),
+        passenger: assets.load("sprites/passenger.sheet.json"),
     });
 }
 
@@ -75,8 +81,17 @@ fn build_when_ready(
         return; // still loading, - ask again next frame
     };
 
+    let Some(signs) = sheets.get(&pending.signs) else {
+        return;
+    };
+    let Some(passenger) = sheets.get(&pending.passenger) else {
+        return;
+    };
+
     commands.insert_resource(GameAssets {
         copter: build_sheet(copter, &assets, &mut layouts),
+        signs: build_sheet(signs, &assets, &mut layouts),
+        passenger: build_sheet(passenger, &assets, &mut layouts),
     });
     commands.remove_resource::<PendingSheets>();
     next.set(AppState::InGame);

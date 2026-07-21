@@ -1,5 +1,5 @@
 use crate::{assets::GameAssets, physics::FlightConfig};
-use bevy::prelude::*;
+use bevy::{prelude::*, transform};
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*};
 
 use crate::states::AppState;
@@ -94,6 +94,38 @@ impl TileGrid {
     }
 }
 
+#[derive(Debug)]
+pub struct Stop {
+    pub address: u8,
+    pub sign_pos: Vec2, // captured from TaxiStop entity's GlobalTransform, where passengers wait (sign tile - 1)
+    pub cave_pos: Vec2, // captured from CaveEntrance entity's GlobalTransform, where passenger enter and leave the world
+}
+
+#[derive(Resource, Default)]
+pub struct TaxiRegistry(pub Vec<Stop>);
+
+impl TaxiRegistry {
+    pub fn by_address(&self, a: u8) -> Option<&Stop> {
+        self.0.iter().find(|s| s.address == a)
+    }
+
+    pub fn stop_near(&self, pos: Vec2, radius: f32) -> Option<&Stop> {
+        self.0
+            .iter()
+            .map(|s| (s, s.sign_pos.distance_squared(pos)))
+            .filter(|(_, d2)| *d2 <= radius * radius)
+            .min_by(|(_, a), (_, b)| a.total_cmp(b))
+            .map(|(s, _)| s)
+    }
+
+    pub fn fare_between(&self, from: u8, to: u8, cfg: &FlightConfig) -> f32 {
+        match (self.by_address(from), self.by_address(to)) {
+            (Some(a), Some(b)) => cfg.fare_base + a.sign_pos.distance(b.sign_pos) * cfg.fare_per_px,
+            _ => cfg.fare_min,
+        }
+    }
+}
+
 #[derive(Default, Component)]
 pub struct Wall;
 
@@ -108,7 +140,7 @@ impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(LdtkPlugin)
             .insert_resource(LevelSelection::index(0))
-            .register_ldtk_int_cell::<WallBundle>(1)
+            .register_ldtk_int_cell::<WallBundle>(1) //1  - wall type in LDtk
             .add_systems(OnEnter(AppState::InGame), spawn_world)
             .add_systems(
                 PostUpdate,
@@ -197,14 +229,70 @@ fn convert_editor_entities(
     assets: Res<GameAssets>,
     cfg: Res<FlightConfig>,
 ) {
+    if instances.is_empty() {
+        return;
+    }
+
+    // PASS 1: platforms
+    // PASS 2: taxi infrastructure
+    let mut signs: Vec<(u8, Vec2)> = Vec::new();
+    let mut caves: Vec<(u8, Vec2)> = Vec::new();
+    for (_, inst, transform) in &instances {
+        let pos = transform.translation().truncate();
+        match inst.identifier.as_str() {
+            "TaxiStop" => {
+                let Ok(addr) = inst.get_int_field("address") else {
+                    warn!("TaxiStop at {pos} missing 'address' - skipped");
+                    continue;
+                };
+                signs.push((*addr as u8, pos));
+                crate::passengers::spawn_sign(&mut commands, &assets, pos, *addr as u8);
+            }
+            "CaveEntrance" => {
+                let Ok(addr) = inst.get_int_field("address") else {
+                    warn!("CaveEntrance at {pos} missing 'address' - skipped");
+                    continue;
+                };
+                caves.push((*addr as u8, pos));
+                crate::passengers::spawn_cave(&mut commands, &assets, pos);
+            }
+            _ => {}
+        }
+    }
+
+    // Pair by address
+    let mut registry = TaxiRegistry::default();
+    for (address, sign_pos) in &signs {
+        let Some((_, cave_pos)) = caves.iter().find(|(a, _)| a == address) else {
+            warn!("TaxiStop '{address}' found no CaveEntrance with the same address - skipped");
+            continue;
+        };
+        registry.0.push(Stop {
+            address: *address,
+            sign_pos: *sign_pos,
+            cave_pos: *cave_pos,
+        });
+    }
+
+    if !registry.0.is_empty() {
+        info!(
+            "taxi registry: {} stops, walks of {:?} px",
+            registry.0.len(),
+            registry
+                .0
+                .iter()
+                .map(|s| (s.cave_pos.x - s.sign_pos.x).abs().round())
+                .collect::<Vec<_>>()
+        );
+    }
+
+    commands.insert_resource(registry);
+
     for (editor_entity, inst, transform) in &instances {
         let pos = transform.translation().truncate();
         match inst.identifier.as_str() {
+            "TaxiStop" | "CaveEntrance" => {} // consumed above
             "PlayerSpawn" => crate::player::spawn_player(&mut commands, &assets, pos, &cfg),
-            "Platform" => {
-                let half = Vec2::new(inst.width as f32, inst.height as f32) * 0.5 * 0.8;
-                crate::zoo::spawn_platform(&mut commands, &asset_server, pos, half);
-            }
             "Pterodactyl" => {
                 let speed = inst.get_float_field("speed").copied().unwrap_or(120.0);
                 let dir = inst

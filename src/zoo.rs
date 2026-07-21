@@ -34,9 +34,6 @@ impl Plugin for ZooPlugin {
 #[derive(Component)]
 struct Passenger;
 
-#[derive(Component, Default)]
-pub struct Platform;
-
 #[derive(Component)]
 struct Pterodactyl;
 
@@ -66,22 +63,6 @@ pub fn spawn_pterodactyl(
         Hazard { radius: 16.0 },
         PhysicalTranslation(pos),
         PreviousPhysicalTranslation(pos),
-        LevelOwned,
-        DespawnOnExit(AppState::InGame),
-    ));
-}
-
-pub fn spawn_platform(
-    commands: &mut Commands,
-    asset_server: &Res<AssetServer>,
-    pos: Vec2,
-    half: Vec2,
-) {
-    commands.spawn((
-        Platform,
-        Sprite::from_image(asset_server.load("sprites/platform.png")),
-        Transform::from_translation(pos.extend(z::PLATFORM)),
-        Collider { half },
         LevelOwned,
         DespawnOnExit(AppState::InGame),
     ));

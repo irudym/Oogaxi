@@ -22,6 +22,14 @@ pub struct FlightConfig {
     pub damage_k: f32,        // integrity lost per px/s of severity
     pub hazard_severity: f32, // a flying objects strike
     pub invuln_secs: f32,     // i-frames after any damage
+    pub max_passengers: u32,
+    pub spawn_secs_min: f32,
+    pub spawn_secs_max: f32,
+    pub walk_speed: f32, //px/s
+    pub fare_base: f32,
+    pub fare_per_px: f32,
+    pub fare_min: f32,
+    pub fare_decay: f32,
 }
 
 impl Default for FlightConfig {
@@ -40,6 +48,14 @@ impl Default for FlightConfig {
             damage_k: 0.15,
             hazard_severity: 400.0,
             invuln_secs: 0.8,
+            max_passengers: 4,
+            spawn_secs_min: 2.0,
+            spawn_secs_max: 6.0,
+            walk_speed: 40.0, //px/s
+            fare_base: 100.0,
+            fare_per_px: 2.0,
+            fare_min: 1.0,
+            fare_decay: 2.0,
         }
     }
 }

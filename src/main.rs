@@ -1,12 +1,15 @@
 mod animations;
 mod assets;
+mod bubble;
 mod camera;
 mod collision;
+mod game_rand;
 mod honk;
 mod input;
 mod integrity;
 mod levels;
 mod messages;
+mod passengers;
 mod physics;
 mod player;
 mod score;
@@ -18,12 +21,16 @@ mod zoo;
 use bevy::{prelude::*, window::PresentMode};
 
 use bevy_common_assets::json::JsonAssetPlugin;
+use rand::SeedableRng;
+use rand::rngs::StdRng;
 use states::StatesPlugin;
 
 use crate::animations::AnimationPlugin;
 use crate::assets::AssetsPlugin;
 use crate::camera::CameraPlugin;
+use crate::game_rand::GameRng;
 use crate::levels::TILE;
+use crate::passengers::PassengerPlugin;
 use crate::physics::FlightConfig;
 use crate::{
     collision::CollisionPlugin, input::InputPlugin, integrity::IntegrityPlugin,
@@ -41,15 +48,16 @@ fn main() {
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "Oogaxi: Through the Taxiverse".into(),
-                    resolution: (1280, 960).into(),
+                    resolution: (1280, 720).into(),
                     present_mode: PresentMode::AutoVsync,
-                    resizable: false,
+                    resizable: true,
                     ..default()
                 }),
                 ..default()
             })
             .set(ImagePlugin::default_nearest()),
     )
+    .insert_resource(GameRng(StdRng::seed_from_u64(0xB00)))
     .add_plugins((
         CameraPlugin,
         StatesPlugin,
@@ -62,6 +70,7 @@ fn main() {
         ZooPlugin,
         AnimationPlugin,
         AssetsPlugin,
+        PassengerPlugin,
     ));
     #[cfg(feature = "dev")]
     {

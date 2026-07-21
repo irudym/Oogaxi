@@ -1,4 +1,3 @@
-use bevy::ecs::system::command;
 use bevy::prelude::*;
 
 use crate::levels::TileGrid;
@@ -6,7 +5,6 @@ use crate::messages::{CopterDamaged, Landed};
 use crate::physics::SimSet;
 use crate::physics::{FlightConfig, PhysicalTranslation, PreviousPhysicalTranslation, Velocity};
 use crate::player::Player;
-use crate::zoo::Platform;
 
 /// Keep resting bodies a hair outside surface (avoid float re-penetration)
 const SKIN: f32 = 0.01;
@@ -182,7 +180,6 @@ fn move_and_collide(
     cfg: Res<FlightConfig>,
     time: Res<Time>,
     grid: Res<TileGrid>,
-    platforms: Query<(Entity, &Transform, &Collider), With<Platform>>,
     mut movers: Query<
         (
             Entity,
@@ -200,22 +197,18 @@ fn move_and_collide(
 ) {
     let dt = time.delta_secs();
 
-    let plats: Vec<(Entity, Vec2, Vec2)> = platforms
-        .iter()
-        .map(|(e, t, c)| (e, t.translation.truncate(), c.half))
-        .collect();
-
     for (entity, mut pos, mut prev, mut vel, col, was_grounded) in &mut movers {
         prev.0 = pos.0;
 
+        let delta = vel.0 * dt;
+        // use after delta.x and delta.y
+
         // ----- X axis -----
-        let dx = vel.x * dt;
-        let (gx, ghit) = clamp_vs_grid(&grid, col.half, pos.0, dx, 0);
-        let (px, phit) = clamp_vs_aabbs(&plats, col.half, pos.0, dx, 0);
+        let (new_x, hit_x) = clamp_vs_grid(&grid, col.half, pos.0, delta.x, 0);
+        // let (px, phit) = clamp_vs_aabbs(&plats, col.half, pos.0, dx, 0);
+        // let new_x = if dx > 0.0 { gx.min(px) } else { gx.max(px) };
 
-        let new_x = if dx > 0.0 { gx.min(px) } else { gx.max(px) };
-
-        let hit_x = ghit || phit.is_some();
+        //let hit_x = ghit || phit.is_some();
         if hit_x {
             let over = (vel.x.abs() - cfg.wall_crash_speed).max(0.0);
             if over > 0.0 {
@@ -228,11 +221,7 @@ fn move_and_collide(
         // ----- Y axis -----
         // Capture before resolution - the classifier's whole input
         let impact = Vec2::new(vel.x, vel.y);
-        let dy = vel.y * dt;
-        let (gy, ghit) = clamp_vs_grid(&grid, col.half, pos.0, dy, 1);
-        let (py, phit) = clamp_vs_aabbs(&plats, col.half, pos.0, dy, 1);
-        let new_y = if dy > 0.0 { gy.min(py) } else { gy.max(py) };
-        let hit_y = ghit || phit.is_some();
+        let (new_y, hit_y) = clamp_vs_grid(&grid, col.half, pos.0, delta.y, 1);
         pos.y = new_y;
 
         if hit_y && impact.y < 0.0 {
@@ -242,7 +231,7 @@ fn move_and_collide(
                     vel.0 = Vec2::ZERO;
                     if !was_grounded {
                         commands.entity(entity).insert(Grounded);
-                        landed.write(Landed { platform: phit }); // None = terrain
+                        landed.write(Landed { at: pos.0 }); // None = terrain
                     }
                 }
                 Verdict::Crashed(severity) => {

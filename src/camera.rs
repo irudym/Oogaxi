@@ -1,6 +1,5 @@
 use bevy::camera::{Hdr, ScalingMode};
 use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
-use bevy::log::tracing_subscriber::layer;
 use bevy::prelude::*;
 
 use crate::physics::Velocity;
@@ -54,8 +53,8 @@ fn spawn_camera(mut commands: Commands) {
         // Bloom::default()
         Projection::Orthographic(OrthographicProjection {
             scaling_mode: ScalingMode::Fixed {
-                width: 640.0,
-                height: 480.0,
+                width: 640.0, // best modes: 640x360, 1280x720
+                height: 360.0,
             },
             ..OrthographicProjection::default_2d()
         }),

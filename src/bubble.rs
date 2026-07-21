@@ -1,0 +1,35 @@
+use bevy::prelude::*;
+
+use crate::assets::GameAssets;
+
+#[derive(Component)]
+pub struct Bubble(pub Entity);
+
+pub fn spawn_bubble(
+    commands: &mut Commands,
+    assets: &GameAssets,
+    parent: Entity,
+    glyph: usize,
+) -> Entity {
+    commands
+        .spawn((
+            Sprite {
+                image: assets.signs.image.clone(),
+                texture_atlas: Some(TextureAtlas {
+                    layout: assets.signs.layout.clone(),
+                    index: glyph,
+                }),
+                ..default()
+            },
+            Transform::from_xyz(0.0, 22.0, 0.5), // relative to parent
+            ChildOf(parent),
+        ))
+        .id()
+}
+
+pub fn pop_bubble(commands: &mut Commands, entity: Entity, bubble: Option<&Bubble>) {
+    if let Some(b) = bubble {
+        commands.entity(b.0).despawn();
+        commands.entity(entity).remove::<Bubble>();
+    }
+}

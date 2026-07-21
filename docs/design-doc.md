@@ -69,3 +69,18 @@ devices → [leafwing] → ActionState (verbs) → accumulate_input → ThrustIn
 
 ### Click execution
 gathering (leafwing, render clock) → intent (ours, plain data) → simulation (fixed clock)
+
+
+### Passenger behaviour
+
+Emerging (steps out of cave portal)
+  → WalkingToSign            (walks to their stop's sign)
+  → Waiting                  (idles at the sign)
+  → Announcing               (HONK nearby → speech bubble shows destination address)
+  → Boarding                 (copter lands at their stop → walks to the copter)
+  → Riding                   (hidden aboard; fare meter live)
+  → Unboarding               (copter lands at ANY stop → walks out onto the pad)
+  → Leaving                  (walks to the nearest cave entrance)
+  → despawned at the portal  (the Remove observer eulogizes)
+
+Wrong address at unboarding: rude bubble → Leaving, fare unpaid.
