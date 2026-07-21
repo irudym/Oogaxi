@@ -76,12 +76,12 @@ gathering (leafwing, render clock) → intent (ours, plain data) → simulation 
 Emerging (steps out of cave portal)
   → WalkingToSign            (walks to their stop's sign)
   → Waiting                  (idles at the sign)
-  → Announcing               (HONK nearby → speech bubble shows destination address)
+  → Announcing               (the copter is nearby → speech bubble shows destination address)
   → Boarding                 (copter lands at their stop → walks to the copter)
   → Riding                   (hidden aboard; fare meter live)
-  → Unboarding               (copter lands at ANY stop → walks out onto the pad)
+  → Unboarding               (copter lands at ANY stop (expect the passenger's origin) → walks out onto the pad)
   → Leaving                  (walks to the nearest cave entrance)
   → despawned at the portal  (the Remove observer eulogizes)
 
 Wrong address at unboarding: rude bubble → Leaving, fare unpaid.
-The passenger can unboard the copter only if the address when arrived is not equal to the initial address of the passenger.
+The passenger can unboard the copter only if the address when arrived is not equal to the origin address of the passenger.
