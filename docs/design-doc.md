@@ -84,3 +84,4 @@ Emerging (steps out of cave portal)
   → despawned at the portal  (the Remove observer eulogizes)
 
 Wrong address at unboarding: rude bubble → Leaving, fare unpaid.
+The passenger can unboard the copter only if the address when arrived is not equal to the initial address of the passenger.

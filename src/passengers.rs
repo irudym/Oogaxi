@@ -59,7 +59,7 @@ pub struct Fare(pub f32);
 pub struct DroppedAt(pub u8);
 
 /// The only legal way between marker-states. 'Out: bundle' - tuples work,
-/// so a transition ca shed several components atomically.
+/// so a transition can shed several components atomically.
 pub fn transition<Out: Bundle>(commands: &mut Commands, entity: Entity, into: impl Bundle) {
     commands.entity(entity).remove::<Out>().insert(into);
 }
@@ -104,7 +104,6 @@ fn passenger_spawner(
     mut commands: Commands,
 ) {
     *next_spawn -= time.delta_secs();
-    warn!("passenger_spawner:: next_spawn: {:?}", next_spawn);
     if *next_spawn > 0.0
         || living.iter().count() > cfg.max_passengers as usize
         || registry.0.len() < 2
@@ -120,7 +119,6 @@ fn passenger_spawner(
         .iter()
         .filter(|s| !occupied.contains(&s.address))
         .collect();
-    warn!("Passenger_spawner:: free: {:?}", free);
     let Some(origin) = free.get(rng.0.random_range(0..free.len().max(1))).copied() else {
         return;
     };
@@ -168,10 +166,7 @@ fn finish_emerging(
         let Some(stop) = registry.by_address(passenger.origin) else {
             continue;
         };
-        warn!(
-            "Passenger finished emerging, need to walk to the sign: {}",
-            stop.sign_pos,
-        );
+
         transition::<Emerging>(
             &mut commands,
             entity,
@@ -292,7 +287,7 @@ fn fare_decay(cfg: Res<FlightConfig>, time: Res<Time>, mut fares: Query<&mut Far
 fn unboard_on_landing(
     mut landings: MessageReader<Landed>,
     registry: Res<TaxiRegistry>,
-    riding: Query<Entity, (With<Passenger>, With<Riding>)>,
+    riding: Query<(Entity, &Passenger), With<Riding>>,
     player: Query<&Transform, With<Player>>,
     mut commands: Commands,
 ) {
@@ -303,10 +298,14 @@ fn unboard_on_landing(
         let Ok(copter) = player.single() else {
             continue;
         };
-        for entity in &riding {
+        for (entity, passenger) in &riding {
             let mut drop =
                 Transform::from_translation(copter.translation.truncate().extend(z::PASSENGER));
             drop.translation.y = stop.sign_pos.y; //feet on the pad, not mid rotor
+            // check that landing address is different than origin, otherwise keep the passenger in the copter.
+            if stop.address == passenger.origin {
+                continue;
+            }
             transition::<Riding>(
                 &mut commands,
                 entity,
