@@ -14,3 +14,10 @@ The game is divided into two distinct settings:
 
 1. **The Alternate Prehistoric Era** — a stone-age world of dinosaurs, pterodactyls, and primitive currency, where the player pilots the pedal copter.
 2. **The Cyberpunk Future** — a neon-lit metropolis where the player controls a modern flying taxi with rocket engines.
+
+### Usage
+
+To run the app in debug mode:
+```
+cargo run --features dev
+```
