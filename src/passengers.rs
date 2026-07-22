@@ -12,7 +12,7 @@ use crate::states::AppState;
 use crate::z::z;
 use crate::{assets::GameAssets, physics::FlightConfig};
 
-pub const HAIL_RADIUS: f32 = 80.0; //5 tiles
+pub const HAIL_RADIUS: f32 = 64.0; //4 tiles
 const ARRIVE_EPS: f32 = 1.5;
 const GLYPH_GRR: usize = 8;
 
@@ -33,7 +33,7 @@ pub struct WalkingToSign;
 pub struct Waiting;
 
 #[derive(Component)]
-pub struct Announcing;
+pub struct Announcing(pub Timer);
 
 #[derive(Component)]
 pub struct Boarding;
@@ -186,59 +186,76 @@ fn arrive_at_sign(
     }
 }
 
-/// Waiting -> Announcing: honk within earshot raises the destination bubble
-pub fn announce_on_honk(
-    mut honks: MessageReader<Honked>,
-    waiting: Query<(Entity, &Transform, &Passenger), With<Waiting>>,
+/// Waiting -> Announcing: as soon as the passenger reaches the sign, raise the destination bubble
+/// TODO: announcing should have some min time (2 sec) before the passenger start boarding.
+pub fn announce_at_sign(
+    waiting: Query<(Entity, &Passenger), With<Waiting>>,
     assets: Res<GameAssets>,
     mut commands: Commands,
 ) {
-    for honk in honks.read() {
-        for (entity, tf, passenger) in &waiting {
-            if tf.translation.truncate().distance(honk.at) > HAIL_RADIUS {
-                continue;
-            }
-            let bubble = spawn_bubble(
-                &mut commands,
-                &assets,
-                entity,
-                passenger.destination as usize - 1,
-            );
-            transition::<Waiting>(&mut commands, entity, (Announcing, Bubble(bubble)));
-        }
+    for (entity, passenger) in &waiting {
+        let bubble = spawn_bubble(
+            &mut commands,
+            &assets,
+            entity,
+            passenger.destination as usize - 1,
+        );
+        transition::<Waiting>(
+            &mut commands,
+            entity,
+            (
+                Announcing(Timer::from_seconds(2.0, TimerMode::Once)),
+                Bubble(bubble),
+            ),
+        );
     }
 }
 
 /// (Waiting | Announcing) -> Boarding: the copter landed at their stop
 /// Decision 2 lives in this Or<> - announcement is information, not permission
 fn board_on_landing(
-    mut landings: MessageReader<Landed>,
     registry: Res<TaxiRegistry>,
-    candidates: Query<(Entity, &Passenger, Option<&Bubble>), Or<(With<Waiting>, With<Announcing>)>>,
+    mut candidates: Query<
+        (Entity, &Passenger, Option<&Bubble>, Option<&mut Announcing>),
+        Or<(With<Waiting>, With<Announcing>)>,
+    >,
     aboard: Query<(), (With<Passenger>, Or<(With<Boarding>, With<Riding>)>)>,
-    player: Query<&Transform, With<Player>>,
+    player: Query<(&Transform, Has<Grounded>), With<Player>>,
     mut commands: Commands,
+    time: Res<Time>,
 ) {
-    for landing in landings.read() {
-        let Ok(copter) = player.single() else {
-            continue;
-        };
-        let Some(stop) = registry.stop_near(landing.at, HAIL_RADIUS) else {
-            continue;
-        };
-        if !aboard.is_empty() {
-            continue;
+    let Ok(copter) = player.single() else {
+        return;
+    };
+
+    if !copter.1 {
+        return;
+    }
+
+    if !aboard.is_empty() {
+        return;
+    }
+
+    let Some(stop) = registry.stop_near(copter.0.translation.truncate(), HAIL_RADIUS) else {
+        return;
+    };
+
+    if let Some((entity, _, bubble, mut announcing)) = candidates
+        .iter_mut()
+        .find(|(_, p, _, _)| p.origin == stop.address)
+    {
+        if let Some(ann) = &mut announcing {
+            // tick timer only then the copter landed
+            if !ann.0.tick(time.delta()).is_finished() {
+                return;
+            }
         }
-        if let Some((entity, _, bubble)) =
-            candidates.iter().find(|(_, p, _)| p.origin == stop.address)
-        {
-            pop_bubble(&mut commands, entity, bubble);
-            transition::<(Waiting, Announcing)>(
-                &mut commands,
-                entity,
-                (Boarding, WalkTo(copter.translation.x)),
-            );
-        }
+        pop_bubble(&mut commands, entity, bubble);
+        transition::<(Waiting, Announcing)>(
+            &mut commands,
+            entity,
+            (Boarding, WalkTo(copter.0.translation.x)),
+        );
     }
 }
 
@@ -284,39 +301,45 @@ fn fare_decay(cfg: Res<FlightConfig>, time: Res<Time>, mut fares: Query<&mut Far
 
 /// Riding -> Unboarding: any registered stop unboarding
 fn unboard_on_landing(
-    mut landings: MessageReader<Landed>,
+    //mut landings: MessageReader<Landed>,
     registry: Res<TaxiRegistry>,
     riding: Query<(Entity, &Passenger), With<Riding>>,
-    player: Query<&Transform, With<Player>>,
+    player: Query<(&Transform, Has<Grounded>), With<Player>>,
     mut commands: Commands,
 ) {
-    for landing in landings.read() {
-        let Some(stop) = registry.stop_near(landing.at, HAIL_RADIUS) else {
+    // Passengers need to unboard the copter event when it's crashed.
+    let Ok((copter, grounded)) = player.single() else {
+        return;
+    };
+
+    let Some(stop) = registry.stop_near(copter.translation.truncate(), HAIL_RADIUS) else {
+        return;
+    };
+
+    //check if the copter grounded
+    if !grounded {
+        return;
+    }
+    for (entity, passenger) in &riding {
+        let mut drop =
+            Transform::from_translation(copter.translation.truncate().extend(z::PASSENGER));
+        drop.translation.y = stop.sign_pos.y; //feet on the pad, not mid rotor
+        // check that landing address is different than origin, otherwise keep the passenger in the copter.
+        if stop.address == passenger.origin {
             continue;
-        };
-        let Ok(copter) = player.single() else {
-            continue;
-        };
-        for (entity, passenger) in &riding {
-            let mut drop =
-                Transform::from_translation(copter.translation.truncate().extend(z::PASSENGER));
-            drop.translation.y = stop.sign_pos.y; //feet on the pad, not mid rotor
-            // check that landing address is different than origin, otherwise keep the passenger in the copter.
-            if stop.address == passenger.origin {
-                continue;
-            }
-            transition::<Riding>(
-                &mut commands,
-                entity,
-                (
-                    Unboarding,
-                    DroppedAt(stop.address),
-                    Visibility::Visible,
-                    drop,
-                    WalkTo(stop.sign_pos.x),
-                ),
-            );
         }
+
+        transition::<Riding>(
+            &mut commands,
+            entity,
+            (
+                Unboarding,
+                DroppedAt(stop.address),
+                Visibility::Visible,
+                drop,
+                WalkTo(stop.sign_pos.x),
+            ),
+        );
     }
 }
 
@@ -400,6 +423,7 @@ impl Plugin for PassengerPlugin {
                 finish_emerging,
                 arrive_at_sign,
                 // announce_on_honk,
+                announce_at_sign,
                 board_on_landing,
                 finish_boarding,
                 fare_decay,
@@ -409,6 +433,18 @@ impl Plugin for PassengerPlugin {
             )
                 .chain()
                 .in_set(SimSet::Contact),
+        );
+        #[cfg(feature = "dev")]
+        app.add_systems(Update, draw_debug_layer);
+    }
+}
+
+fn draw_debug_layer(mut gizmos: Gizmos, waiting: Query<&Transform, With<Announcing>>) {
+    for tf in waiting {
+        gizmos.circle_2d(
+            Isometry2d::from_translation(tf.translation.truncate()),
+            HAIL_RADIUS,
+            Color::srgb(0.4, 0.3, 1.0),
         );
     }
 }

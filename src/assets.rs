@@ -13,6 +13,7 @@ pub struct GameAssets {
     pub copter: SpriteSheet,
     pub signs: SpriteSheet,
     pub passenger: SpriteSheet,
+    pub bubble: SpriteSheet,
     //pub copter_layout: Handle<TextureAtlasLayout>,
     /*
     pub ptero_sheet: Handle<Image>,
@@ -29,6 +30,7 @@ struct PendingSheets {
     copter: Handle<Spritesheet>,
     signs: Handle<Spritesheet>,
     passenger: Handle<Spritesheet>,
+    bubble: Handle<Spritesheet>,
     // TODO: other sprites go here
 }
 
@@ -65,6 +67,7 @@ fn start_loading(mut commands: Commands, assets: Res<AssetServer>) {
         copter: assets.load("sprites/copter42.sheet.json"),
         signs: assets.load("sprites/signs.sheet.json"),
         passenger: assets.load("sprites/passenger.sheet.json"),
+        bubble: assets.load("sprites/bubble.sheet.json"),
     });
 }
 
@@ -87,11 +90,15 @@ fn build_when_ready(
     let Some(passenger) = sheets.get(&pending.passenger) else {
         return;
     };
+    let Some(bubble) = sheets.get(&pending.bubble) else {
+        return;
+    };
 
     commands.insert_resource(GameAssets {
         copter: build_sheet(copter, &assets, &mut layouts),
         signs: build_sheet(signs, &assets, &mut layouts),
         passenger: build_sheet(passenger, &assets, &mut layouts),
+        bubble: build_sheet(bubble, &assets, &mut layouts),
     });
     commands.remove_resource::<PendingSheets>();
     next.set(AppState::InGame);

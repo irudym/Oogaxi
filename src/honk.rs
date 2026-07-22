@@ -20,9 +20,8 @@ impl Plugin for HonkPlugin {
             .add_systems(Update, buffer_honk.run_if(in_state(IsPaused::Running)))
             .add_systems(
                 FixedUpdate,
-                consume_honk
-                    .in_set(SimSet::Contact)
-                    .before(super::passengers::announce_on_honk),
+                consume_honk.in_set(SimSet::Contact),
+                //.before(super::passengers::announce_on_honk),
             );
     }
 }

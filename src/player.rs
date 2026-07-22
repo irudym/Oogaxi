@@ -11,7 +11,6 @@ use crate::{
     z::z,
 };
 use bevy::prelude::*;
-use serde::de;
 
 #[derive(Component)]
 pub struct Player;
@@ -34,6 +33,7 @@ pub fn spawn_player(
     cfg: &FlightConfig,
 ) {
     let player_id: u8 = 1;
+    let col_size = Vec2::new(42.0, 42.0) * 0.98 / 2.0; // TODO: need to get the frame size from atlas.
     info!(
         "Spawn player with position: {} and velocity: {:?} ",
         pos,
@@ -55,9 +55,7 @@ pub fn spawn_player(
         assets.copter.clip("idle"),
         crate::animations::AnimState::default(),
         Transform::from_xyz(pos.x, pos.y, z::PLAYER),
-        Collider {
-            half: Vec2::new(14.0, 16.0),
-        },
+        Collider { half: col_size },
         Velocity::default(),
         ThrustInput::default(),
         PhysicalTranslation(pos),

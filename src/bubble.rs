@@ -14,14 +14,14 @@ pub fn spawn_bubble(
     commands
         .spawn((
             Sprite {
-                image: assets.signs.image.clone(),
+                image: assets.bubble.image.clone(),
                 texture_atlas: Some(TextureAtlas {
-                    layout: assets.signs.layout.clone(),
-                    index: glyph,
+                    layout: assets.bubble.layout.clone(),
+                    index: 0, // glyph,
                 }),
                 ..default()
             },
-            Transform::from_xyz(0.0, 22.0, 0.5), // relative to parent
+            Transform::from_xyz(18.0, 18.0, 0.5), // relative to parent
             ChildOf(parent),
         ))
         .id()

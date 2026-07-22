@@ -1,4 +1,4 @@
-use crate::{assets::GameAssets, physics::FlightConfig};
+use crate::{assets::GameAssets, passengers, physics::FlightConfig};
 use bevy::{prelude::*, transform};
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*};
 
