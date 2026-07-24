@@ -66,7 +66,7 @@ fn start_loading(mut commands: Commands, assets: Res<AssetServer>) {
     commands.insert_resource(PendingSheets {
         copter: assets.load("sprites/copter42.sheet.json"),
         signs: assets.load("sprites/signs.sheet.json"),
-        passenger: assets.load("sprites/passenger.sheet.json"),
+        passenger: assets.load("sprites/caveman3.sheet.json"),
         bubble: assets.load("sprites/bubble.sheet.json"),
     });
 }

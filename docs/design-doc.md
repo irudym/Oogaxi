@@ -85,3 +85,6 @@ Emerging (steps out of cave portal)
 
 Wrong address at unboarding: rude bubble → Leaving, fare unpaid.
 The passenger can unboard the copter only if the address on arrival is not equal to the origin address of the passenger.
+
+### Hazards
+**Pterodactyl** has a patrolling behaviour be default, when spot the player in the vicinity, shows a speech bubble with '!' and start attacking the player (dive attack).

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::hazards::PteroBrain;
 use crate::levels::TileGrid;
 use crate::messages::{CopterDamaged, Landed};
 use crate::physics::SimSet;
@@ -67,7 +68,7 @@ fn draw_colliders(
 /// INVARIANT: |delta| < TILE, so the moved box can only newly overlap tiles
 /// adjacent to its path - no cell-walking needed. Break the invariant and you
 /// get tunneling
-fn clamp_vs_grid(
+pub fn clamp_vs_grid(
     grid: &TileGrid,
     half: Vec2,
     mut pos: Vec2,
@@ -271,7 +272,7 @@ fn move_hazards(
             &mut Velocity,
             &Hazard,
         ),
-        Without<Player>,
+        (Without<Player>, Without<PteroBrain>),
     >,
 ) {
     let dt = time.delta_secs();

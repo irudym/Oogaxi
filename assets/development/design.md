@@ -5,4 +5,4 @@ map width in tiles to fit the screen: 40
 
 copter: 42x42px (canvas size 64x64px)
 main character: height 28px (canvas 32x32)
-passengers: vary (canvas size 32x32)
+passengers: vary (canvas size 32x32), for example 24x24px

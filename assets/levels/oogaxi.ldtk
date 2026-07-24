@@ -11,7 +11,7 @@
 	"iid": "bdd073c0-6fc0-11f1-93d7-998a6e705c54",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 143,
+	"nextUid": 144,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -1103,6 +1103,43 @@
 					"allowedRefsEntityUid": null,
 					"allowedRefTags": [],
 					"tilesetUid": null
+				},
+				{
+					"identifier": "patrol",
+					"doc": null,
+					"__type": "Array<Point>",
+					"uid": 143,
+					"type": "F_Point",
+					"isArray": true,
+					"canBeNull": true,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "PointPath",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
 				}
 			]
 		},
@@ -1433,6 +1470,38 @@
 							"fieldInstances": [{ "__identifier": "address", "__type": "Int", "__value": 3, "__tile": null, "defUid": 127, "realEditorValues": [{ "id": "V_Int", "params": [3] }] }],
 							"__worldX": 448,
 							"__worldY": 288
+						},
+						{
+							"__identifier": "Pterodactyl",
+							"__grid": [19,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#E4A672",
+							"iid": "999646a0-6fc0-11f1-b00d-ab3d09b46571",
+							"width": 16,
+							"height": 16,
+							"defUid": 113,
+							"px": [304,48],
+							"fieldInstances": [
+								{ "__identifier": "speed", "__type": "Float", "__value": 0, "__tile": null, "defUid": 114, "realEditorValues": [] },
+								{ "__identifier": "direction", "__type": "Point", "__value": null, "__tile": null, "defUid": 115, "realEditorValues": [] },
+								{ "__identifier": "patrol", "__type": "Array<Point>", "__value": [ { "cx": 2, "cy": 3 }, { "cx": 2, "cy": 6 }, { "cx": 19, "cy": 6 }, { "cx": 19, "cy": 4 } ], "__tile": null, "defUid": 143, "realEditorValues": [ {
+									"id": "V_String",
+									"params": ["2,3"]
+								}, {
+									"id": "V_String",
+									"params": ["2,6"]
+								}, {
+									"id": "V_String",
+									"params": ["19,6"]
+								}, {
+									"id": "V_String",
+									"params": ["19,4"]
+								} ] }
+							],
+							"__worldX": 304,
+							"__worldY": 48
 						}
 					]
 				},
@@ -1729,7 +1798,8 @@
 								{ "__identifier": "direction", "__type": "Point", "__value": { "cx": 13, "cy": 11 }, "__tile": null, "defUid": 115, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["13,11"]
-								}] }
+								}] },
+								{ "__identifier": "patrol", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 143, "realEditorValues": [] }
 							],
 							"__worldX": 736,
 							"__worldY": -224
@@ -1751,7 +1821,8 @@
 								{ "__identifier": "direction", "__type": "Point", "__value": { "cx": 35, "cy": 3 }, "__tile": null, "defUid": 115, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["35,3"]
-								}] }
+								}] },
+								{ "__identifier": "patrol", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 143, "realEditorValues": [] }
 							],
 							"__worldX": 1152,
 							"__worldY": -336

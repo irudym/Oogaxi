@@ -1,6 +1,6 @@
 use crate::{assets::GameAssets, passengers, physics::FlightConfig};
 use bevy::{prelude::*, transform};
-use bevy_ecs_ldtk::{ldtk::Level, prelude::*};
+use bevy_ecs_ldtk::{ldtk::Level, prelude::*, utils::ldtk_grid_coords_to_translation};
 
 use crate::states::AppState;
 
@@ -92,6 +92,48 @@ impl TileGrid {
             origin,
         }
     }
+
+    /// True, if the segment from 'a' to 'b' crosses no solid cell
+    pub fn line_of_sight(&self, a: Vec2, b: Vec2) -> bool {
+        let (mut tx, mut ty) = self.world_to_tile(a);
+        let (ex, ey) = self.world_to_tile(b);
+
+        let d = b - a;
+        let step_x: i32 = if d.x > 0.0 { 1 } else { -1 };
+        let step_y: i32 = if d.y > 0.0 { 1 } else { -1 };
+
+        //t to the first x/y boundary, and t per full cell:
+        let (mut t_max_x, t_delta_x) = axis_params(a.x, d.x, self.origin.x, tx, step_x);
+        let (mut t_max_y, t_delta_y) = axis_params(a.y, d.y, self.origin.y, ty, step_y);
+        loop {
+            if self.is_solid(tx, ty) {
+                return false;
+            }
+            if tx == ex && ty == ey {
+                return true;
+            }
+            if t_max_x < t_max_y {
+                tx += step_x;
+                t_max_x += t_delta_x;
+            } else {
+                ty += step_y;
+                t_max_y += t_delta_y;
+            }
+        }
+    }
+
+    pub fn tile_center(&self, tile_coord: IVec2) -> Vec2 {
+        let (min, max) = self.tile_bounds(tile_coord.x, tile_coord.y);
+        (min + max) / 2.0
+    }
+}
+
+fn axis_params(a: f32, d: f32, origin: f32, tile: i32, step: i32) -> (f32, f32) {
+    if d == 0.0 {
+        return (f32::INFINITY, f32::INFINITY); //parallel: never crosses this axis
+    }
+    let next_boundary = origin + (tile + step.max(0)) as f32 * TILE;
+    ((next_boundary - a) / d, (TILE / d).abs())
 }
 
 #[derive(Debug)]
@@ -228,7 +270,13 @@ fn convert_editor_entities(
     asset_server: Res<AssetServer>,
     assets: Res<GameAssets>,
     cfg: Res<FlightConfig>,
+    layers: Query<&LayerMetadata>,
+    parents: Query<&ChildOf>,
+    grid: Option<Res<TileGrid>>,
 ) {
+    let Some(grid) = grid else {
+        return;
+    };
     if instances.is_empty() {
         return;
     }
@@ -290,6 +338,13 @@ fn convert_editor_entities(
 
     for (editor_entity, inst, transform) in &instances {
         let pos = transform.translation().truncate();
+        // Walk up to the parent layer to learn its height in tiles:
+        let grid_height = parents
+            .get(editor_entity)
+            .ok()
+            .and_then(|p| layers.get(p.parent()).ok())
+            .map(|l| l.c_hei) // LDtk's own field name for grid rows
+            .unwrap_or(0);
         match inst.identifier.as_str() {
             "TaxiStop" | "CaveEntrance" => {} // consumed above
             "PlayerSpawn" => crate::player::spawn_player(&mut commands, &assets, pos, &cfg),
@@ -300,12 +355,35 @@ fn convert_editor_entities(
                     .copied()
                     .unwrap_or(IVec2::new(1, 0));
                 let dir = Vec2::new(dir.x as f32, dir.y as f32);
-                crate::zoo::spawn_pterodactyl(
-                    &mut commands,
-                    &asset_server,
-                    pos,
-                    dir.normalize() * speed,
-                );
+                let route: Vec<IVec2> = inst
+                    .get_maybe_points_field("patrol")
+                    .map(|pts| {
+                        pts.iter()
+                            .flatten()
+                            // y flip
+                            .map(|p| IVec2::new(p.x, grid_height - p.y - 1))
+                            .collect()
+                    })
+                    .unwrap_or_default();
+
+                for pair in route.windows(2) {
+                    let a = grid.tile_center(pair[0]);
+                    let b = grid.tile_center(pair[1]);
+                    if !grid.line_of_sight(a, b) {
+                        warn!(
+                            "The route has a blind corners between {:?} and {:?} - will get stuck!",
+                            pair[0], pair[1]
+                        );
+                    }
+                }
+                if route.len() < 2 {
+                    warn!(
+                        "Pterodactyl at {pos} has a route of {} points, needs 2+; skipped",
+                        route.len()
+                    )
+                } else {
+                    crate::hazards::spawn_pterodactyl(&mut commands, &asset_server, pos, route);
+                }
             }
             other => warn!("LDtk entity with no converter: {other} "),
         }

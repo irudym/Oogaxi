@@ -4,6 +4,7 @@ mod bubble;
 mod camera;
 mod collision;
 mod game_rand;
+mod hazards;
 mod honk;
 mod input;
 mod integrity;
@@ -15,12 +16,12 @@ mod player;
 mod score;
 mod spritesheet;
 mod states;
+mod steering;
 mod z;
-mod zoo;
+// mod zoo;
 
 use bevy::{prelude::*, window::PresentMode};
 
-use bevy_common_assets::json::JsonAssetPlugin;
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 use states::StatesPlugin;
@@ -29,12 +30,13 @@ use crate::animations::AnimationPlugin;
 use crate::assets::AssetsPlugin;
 use crate::camera::CameraPlugin;
 use crate::game_rand::GameRng;
+use crate::hazards::HazardPlugin;
 use crate::levels::TILE;
 use crate::passengers::PassengerPlugin;
 use crate::physics::FlightConfig;
 use crate::{
     collision::CollisionPlugin, input::InputPlugin, integrity::IntegrityPlugin,
-    levels::LevelPlugin, physics::PhysicsPlugin, score::ScorePlugin, zoo::ZooPlugin,
+    levels::LevelPlugin, physics::PhysicsPlugin, score::ScorePlugin,
 };
 
 fn main() {
@@ -67,10 +69,10 @@ fn main() {
         LevelPlugin,
         CollisionPlugin,
         IntegrityPlugin,
-        ZooPlugin,
         AnimationPlugin,
         AssetsPlugin,
         PassengerPlugin,
+        HazardPlugin,
     ));
     #[cfg(feature = "dev")]
     {
