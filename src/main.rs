@@ -35,8 +35,8 @@ use crate::levels::TILE;
 use crate::passengers::PassengerPlugin;
 use crate::physics::FlightConfig;
 use crate::{
-    collision::CollisionPlugin, input::InputPlugin, integrity::IntegrityPlugin,
-    levels::LevelPlugin, physics::PhysicsPlugin, score::ScorePlugin,
+    bubble::BubblePlugin, collision::CollisionPlugin, input::InputPlugin,
+    integrity::IntegrityPlugin, levels::LevelPlugin, physics::PhysicsPlugin, score::ScorePlugin,
 };
 
 fn main() {
@@ -73,6 +73,7 @@ fn main() {
         AssetsPlugin,
         PassengerPlugin,
         HazardPlugin,
+        BubblePlugin,
     ));
     #[cfg(feature = "dev")]
     {

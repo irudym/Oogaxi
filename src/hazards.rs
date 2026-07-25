@@ -1,3 +1,5 @@
+use crate::assets::GameAssets;
+use crate::bubble::{Bubble, BubbleTimer, spawn_bubble};
 use crate::collision::clamp_vs_grid;
 use crate::{
     animations::AnimState,
@@ -116,7 +118,6 @@ impl Plugin for HazardPlugin {
                     end_dive,
                     recover_motion,
                     finish_recovering,
-                    debug_state,
                 )
                     .chain()
                     .in_set(SimSet::Forces),
@@ -188,26 +189,6 @@ fn draw_attack_radius(
 // Systems
 // ---------------
 //
-fn debug_state(
-    fliers: Query<
-        (
-            &PhysicalTranslation,
-            &Velocity,
-            Has<Patrolling>,
-            Has<Telegraphing>,
-            Has<Recovering>,
-            Has<Diving>,
-        ),
-        With<PteroBrain>,
-    >,
-) {
-    for (pos, vel, patrolling, telegraphing, recovering, diving) in &fliers {
-        warn!(
-            "Ptero with pos: {}, vel: {}, patrolling: {}, telegraphing: {}, recovering: {}, diving: {}",
-            pos.0, vel.0, patrolling, telegraphing, recovering, diving
-        );
-    }
-}
 
 /// Patrolling - motion only, no transition in this system
 ///  'arrive' at the current waypoint; advance cyclically when close.
@@ -254,6 +235,7 @@ fn start_attack(
     time: Res<Time>,
     grid: Res<TileGrid>,
     player: Query<&PhysicalTranslation, With<Player>>,
+    assets: Res<GameAssets>,
     mut fliers: Query<
         (Entity, &PhysicalTranslation, &mut Velocity, &mut PteroBrain),
         With<Patrolling>,
@@ -276,10 +258,16 @@ fn start_attack(
         }
 
         vel.0 *= (-8.0 * time.delta_secs()).exp();
+
+        let bubble = spawn_bubble(&mut commands, &assets, entity, 8); // '!' the player detected!
         transition::<Patrolling>(
             &mut commands,
             entity,
-            Telegraphing(Timer::from_seconds(TELEGRAPH_SECS, TimerMode::Once)),
+            (
+                Telegraphing(Timer::from_seconds(TELEGRAPH_SECS, TimerMode::Once)),
+                BubbleTimer(Timer::from_seconds(1.0, TimerMode::Once)),
+                Bubble(bubble),
+            ),
         );
     }
 }
@@ -321,6 +309,7 @@ fn end_dive(
         &mut PteroBrain,
         &WallContact,
     )>,
+    assets: Res<GameAssets>,
     mut commands: Commands,
 ) {
     for (entity, pos, vel, diving, mut brain, contact) in &mut divers {
@@ -331,11 +320,26 @@ fn end_dive(
         if arrived || overshot || contact.0 {
             //contact = hit the wall
             brain.cooldown = Timer::from_seconds(DIVE_COOLDOWN_SECS, TimerMode::Once);
-            transition::<Diving>(
-                &mut commands,
-                entity,
-                Recovering(Timer::from_seconds(RECOVER_SECS, TimerMode::Once)),
-            );
+
+            //in case of overshoot and contact show '?' bubble
+            if overshot || contact.0 {
+                let bubble = spawn_bubble(&mut commands, &assets, entity, 9); // should be '?' glyph
+                transition::<Diving>(
+                    &mut commands,
+                    entity,
+                    (
+                        Recovering(Timer::from_seconds(RECOVER_SECS, TimerMode::Once)),
+                        BubbleTimer(Timer::from_seconds(1.0, TimerMode::Once)),
+                        Bubble(bubble),
+                    ),
+                );
+            } else {
+                transition::<Diving>(
+                    &mut commands,
+                    entity,
+                    Recovering(Timer::from_seconds(RECOVER_SECS, TimerMode::Once)),
+                );
+            }
         }
     }
 }
