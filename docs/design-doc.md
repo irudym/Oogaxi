@@ -88,3 +88,9 @@ The passenger can unboard the copter only if the address on arrival is not equal
 
 ### Hazards
 **Pterodactyl** has a patrolling behaviour be default, when spot the player in the vicinity, shows a speech bubble with '!' and start attacking the player (dive attack).
+
+
+### Proposals
+
+#### Honking
+The honk’s third job. Honking scares creatures: Honked within radius → interrupt to Recovering (flee-flavored). Designer’s call whether this ships — it makes the honk defensive, which changes its economy — but wire it behind a dial and playtest before voting.

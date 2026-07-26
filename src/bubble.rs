@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    assets::GameAssets,
-    states::{AppState, IsPaused},
-};
+use crate::{assets::GameAssets, states::IsPaused};
 
 #[derive(Component)]
 pub struct Bubble(pub Entity);

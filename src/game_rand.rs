@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rand::{SeedableRng, rngs::StdRng};
+use rand::rngs::StdRng;
 
 #[derive(Resource)]
 pub struct GameRng(pub StdRng);

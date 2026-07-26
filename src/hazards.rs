@@ -1,13 +1,13 @@
 use crate::assets::GameAssets;
-use crate::bubble::{Bubble, BubbleTimer, spawn_bubble};
+use crate::bubble::{Bubble, BubbleTimer, pop_bubble, spawn_bubble};
 use crate::collision::clamp_vs_grid;
 use crate::{
     animations::AnimState,
-    collision::{Collider, Hazard},
+    collision::Hazard,
     levels::{LevelOwned, TileGrid},
     physics::{PhysicalTranslation, PreviousPhysicalTranslation, SimSet, Velocity},
     player::Player,
-    states::{AppState, IsPaused},
+    states::AppState,
     steering,
     z::z,
 };
@@ -237,7 +237,13 @@ fn start_attack(
     player: Query<&PhysicalTranslation, With<Player>>,
     assets: Res<GameAssets>,
     mut fliers: Query<
-        (Entity, &PhysicalTranslation, &mut Velocity, &mut PteroBrain),
+        (
+            Entity,
+            &PhysicalTranslation,
+            &mut Velocity,
+            &mut PteroBrain,
+            Option<&Bubble>,
+        ),
         With<Patrolling>,
     >,
     mut commands: Commands,
@@ -245,7 +251,7 @@ fn start_attack(
     let Ok(player_pos) = player.single() else {
         return;
     };
-    for (entity, pos, mut vel, mut brain) in &mut fliers {
+    for (entity, pos, mut vel, mut brain, bubble) in &mut fliers {
         brain.cooldown.tick(time.delta());
         if !brain.cooldown.is_finished() {
             continue;
@@ -258,6 +264,9 @@ fn start_attack(
         }
 
         vel.0 *= (-8.0 * time.delta_secs()).exp();
+
+        // check if the entity has already bubble and remove it
+        pop_bubble(&mut commands, entity, bubble);
 
         let bubble = spawn_bubble(&mut commands, &assets, entity, 8); // '!' the player detected!
         transition::<Patrolling>(
@@ -308,11 +317,12 @@ fn end_dive(
         &Diving,
         &mut PteroBrain,
         &WallContact,
+        Option<&Bubble>,
     )>,
     assets: Res<GameAssets>,
     mut commands: Commands,
 ) {
-    for (entity, pos, vel, diving, mut brain, contact) in &mut divers {
+    for (entity, pos, vel, diving, mut brain, contact, bubble) in &mut divers {
         let to_target = diving.target - pos.0;
         let arrived = to_target.length() < 8.0;
         let overshot = to_target.dot(vel.0) < 0.0 && to_target.length() > 60.0;
@@ -323,6 +333,9 @@ fn end_dive(
 
             //in case of overshoot and contact show '?' bubble
             if overshot || contact.0 {
+                // check if the entity has already bubble and remove it
+                pop_bubble(&mut commands, entity, bubble);
+
                 let bubble = spawn_bubble(&mut commands, &assets, entity, 9); // should be '?' glyph
                 transition::<Diving>(
                     &mut commands,
