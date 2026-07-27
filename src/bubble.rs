@@ -20,7 +20,7 @@ pub fn spawn_bubble(
                 image: assets.bubble.image.clone(),
                 texture_atlas: Some(TextureAtlas {
                     layout: assets.bubble.layout.clone(),
-                    index: 0, // glyph,
+                    index: glyph,
                 }),
                 ..default()
             },

@@ -1,6 +1,6 @@
-use crate::{assets::GameAssets, passengers, physics::FlightConfig};
-use bevy::{prelude::*, transform};
-use bevy_ecs_ldtk::{ldtk::Level, prelude::*, utils::ldtk_grid_coords_to_translation};
+use crate::{assets::GameAssets, physics::FlightConfig};
+use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::*;
 
 use crate::states::AppState;
 
@@ -349,12 +349,6 @@ fn convert_editor_entities(
             "TaxiStop" | "CaveEntrance" => {} // consumed above
             "PlayerSpawn" => crate::player::spawn_player(&mut commands, &assets, pos, &cfg),
             "Pterodactyl" => {
-                let speed = inst.get_float_field("speed").copied().unwrap_or(120.0);
-                let dir = inst
-                    .get_point_field("direction")
-                    .copied()
-                    .unwrap_or(IVec2::new(1, 0));
-                let dir = Vec2::new(dir.x as f32, dir.y as f32);
                 let route: Vec<IVec2> = inst
                     .get_maybe_points_field("patrol")
                     .map(|pts| {

@@ -1,4 +1,4 @@
-use crate::input::Action;
+use crate::{input::Action, main_menu::*};
 use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 
@@ -11,6 +11,7 @@ pub enum AppState {
     InGame,
     GameOver,
     Loading,
+    Options,
 }
 
 /// Exist only while AppState::InGame is active
@@ -29,7 +30,7 @@ impl Plugin for StatesPlugin {
         app.init_state::<AppState>()
             .add_sub_state::<IsPaused>()
             // Screens: spawns on enter, auto-despawned on exit
-            .add_systems(OnEnter(AppState::Menu), setup_menu_screen)
+            .add_systems(OnEnter(AppState::Menu), setup_main_menu)
             .add_systems(OnEnter(AppState::GameOver), setup_gameover_screen)
             .add_systems(OnEnter(IsPaused::Paused), setup_pause_overlay)
             .add_systems(OnEnter(AppState::Loading), setup_loading)
@@ -37,9 +38,11 @@ impl Plugin for StatesPlugin {
             .add_systems(
                 Update,
                 (
-                    menu_input.run_if(in_state(AppState::Menu)),
                     gameover_input.run_if(in_state(AppState::GameOver)),
                     ingame_input.run_if(in_state(AppState::InGame)),
+                    (menu_keyboard_system, menu_mouse_system, menu_highlight)
+                        .chain()
+                        .run_if(in_state(AppState::Menu)),
                 ),
             );
     }
@@ -53,17 +56,6 @@ fn setup_loading(mut commands: Commands) {
             ..default()
         },
         DespawnOnExit(AppState::Loading),
-    ));
-}
-
-fn setup_menu_screen(mut commands: Commands) {
-    commands.spawn((
-        Text::new("Oogaxi: Through Taxiverse\n\nEnter - start     ESC in game - pause"),
-        TextFont {
-            font_size: FontSize::Px(40.0),
-            ..default()
-        },
-        DespawnOnExit(AppState::Menu),
     ));
 }
 
@@ -88,12 +80,6 @@ fn setup_gameover_screen(mut commands: Commands) {
         TextColor(Color::srgb(0.9, 0.2, 0.2)),
         DespawnOnExit(AppState::GameOver),
     ));
-}
-
-fn menu_input(keys: Res<ButtonInput<KeyCode>>, mut next: ResMut<NextState<AppState>>) {
-    if keys.just_pressed(KeyCode::Enter) {
-        next.set(AppState::Loading);
-    }
 }
 
 fn gameover_input(keys: Res<ButtonInput<KeyCode>>, mut next: ResMut<NextState<AppState>>) {

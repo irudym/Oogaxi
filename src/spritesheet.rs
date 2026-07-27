@@ -12,7 +12,7 @@ pub struct Spritesheet {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct Meta {
+pub struct Meta {
     app: String,
     version: String,
     image: String,
@@ -50,7 +50,7 @@ struct JsonRect {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct FrameDescription {
+pub struct FrameDescription {
     filename: String,
     frame: JsonRect,
     rotated: bool,

@@ -14,7 +14,7 @@ use crate::{assets::GameAssets, physics::FlightConfig};
 
 pub const HAIL_RADIUS: f32 = 64.0; //4 tiles
 const ARRIVE_EPS: f32 = 1.5;
-const GLYPH_GRR: usize = 8;
+const GLYPH_GRR: usize = 10;
 
 #[derive(Component)]
 pub struct Passenger {
@@ -198,7 +198,7 @@ pub fn announce_at_sign(
             &mut commands,
             &assets,
             entity,
-            passenger.destination as usize - 1,
+            passenger.destination as usize,
         );
         transition::<Waiting>(
             &mut commands,

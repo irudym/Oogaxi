@@ -268,7 +268,7 @@ fn start_attack(
         // check if the entity has already bubble and remove it
         pop_bubble(&mut commands, entity, bubble);
 
-        let bubble = spawn_bubble(&mut commands, &assets, entity, 8); // '!' the player detected!
+        let bubble = spawn_bubble(&mut commands, &assets, entity, 10); // '!' the player detected!
         transition::<Patrolling>(
             &mut commands,
             entity,
@@ -336,7 +336,7 @@ fn end_dive(
                 // check if the entity has already bubble and remove it
                 pop_bubble(&mut commands, entity, bubble);
 
-                let bubble = spawn_bubble(&mut commands, &assets, entity, 9); // should be '?' glyph
+                let bubble = spawn_bubble(&mut commands, &assets, entity, 11); // should be '?' glyph
                 transition::<Diving>(
                     &mut commands,
                     entity,
