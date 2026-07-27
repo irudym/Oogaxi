@@ -1,4 +1,4 @@
-use crate::{input::Action, main_menu::*};
+use crate::{assets::PendingSheets, input::Action, main_menu::*};
 use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 
@@ -23,6 +23,9 @@ pub enum IsPaused {
     Paused,
 }
 
+#[derive(Component)]
+struct LoadingFill;
+
 pub struct StatesPlugin;
 
 impl Plugin for StatesPlugin {
@@ -38,6 +41,7 @@ impl Plugin for StatesPlugin {
             .add_systems(
                 Update,
                 (
+                    update_loading_bar.run_if(in_state(AppState::Loading)),
                     gameover_input.run_if(in_state(AppState::GameOver)),
                     ingame_input.run_if(in_state(AppState::InGame)),
                     (menu_keyboard_system, menu_mouse_system, menu_highlight)
@@ -49,14 +53,59 @@ impl Plugin for StatesPlugin {
 }
 
 fn setup_loading(mut commands: Commands) {
-    commands.spawn((
-        Text::new("Loading..."),
-        TextFont {
-            font_size: FontSize::Px(40.0),
-            ..default()
-        },
-        DespawnOnExit(AppState::Loading),
-    ));
+    commands
+        .spawn((
+            Text::new("Loading..."),
+            TextFont {
+                font_size: FontSize::Px(40.0),
+                ..default()
+            },
+            DespawnOnExit(AppState::Loading),
+        ))
+        .with_children(|bar| {
+            //loading bar
+            bar.spawn((
+                Node {
+                    width: Val::Px(200.0),
+                    height: Val::Px(32.0),
+                    ..default()
+                },
+                BackgroundColor(Color::srgb(0.15, 0.15, 0.15)),
+            ))
+            .with_children(|track| {
+                track.spawn((
+                    LoadingFill,
+                    Node {
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        ..default()
+                    },
+                    BackgroundColor(Color::srgb(0.49, 0.82, 0.42)),
+                ));
+            });
+        });
+}
+
+fn update_loading_bar(
+    pending: Res<PendingSheets>,
+    server: Res<AssetServer>,
+    mut fill: Query<&mut Node, With<LoadingFill>>,
+) {
+    let total = pending.pending.len();
+    if total == 0 {
+        return; // nothing to load
+    }
+
+    let loaded = pending
+        .pending
+        .values()
+        .filter(|handle| server.is_loaded_with_dependencies(*handle))
+        .count();
+
+    let frac = loaded as f32 / total as f32;
+    if let Ok(mut node) = fill.single_mut() {
+        node.width = Val::Percent(frac * 100.0);
+    }
 }
 
 fn setup_pause_overlay(mut commands: Commands) {

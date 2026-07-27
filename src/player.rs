@@ -45,14 +45,14 @@ pub fn spawn_player(
         PlayerId(player_id),
         input_map_for(player_id),
         Sprite {
-            image: assets.copter.image.clone(),
+            image: assets.get(crate::assets::Sheet::Copter).image.clone(),
             texture_atlas: Some(TextureAtlas {
-                layout: assets.copter.layout.clone(),
+                layout: assets.get(crate::assets::Sheet::Copter).layout.clone(),
                 index: 0,
             }),
             ..default()
         },
-        assets.copter.clip("idle"),
+        assets.get(crate::assets::Sheet::Copter).clip("idle"),
         crate::animations::AnimState::default(),
         Transform::from_xyz(pos.x, pos.y, z::PLAYER),
         Collider { half: col_size },

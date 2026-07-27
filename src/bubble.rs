@@ -17,9 +17,9 @@ pub fn spawn_bubble(
     commands
         .spawn((
             Sprite {
-                image: assets.bubble.image.clone(),
+                image: assets.get(crate::assets::Sheet::Bubble).image.clone(),
                 texture_atlas: Some(TextureAtlas {
-                    layout: assets.bubble.layout.clone(),
+                    layout: assets.get(crate::assets::Sheet::Bubble).layout.clone(),
                     index: glyph,
                 }),
                 ..default()

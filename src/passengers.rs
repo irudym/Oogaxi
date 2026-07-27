@@ -75,14 +75,14 @@ fn spawn_passenger(commands: &mut Commands, assets: &GameAssets, stop: &Stop, de
         },
         Emerging(Timer::from_seconds(0.4, TimerMode::Once)),
         Sprite {
-            image: assets.passenger.image.clone(),
+            image: assets.get(crate::assets::Sheet::Passenger).image.clone(),
             texture_atlas: Some(TextureAtlas {
-                layout: assets.passenger.layout.clone(),
+                layout: assets.get(crate::assets::Sheet::Passenger).layout.clone(),
                 index: 0,
             }),
             ..default()
         },
-        assets.passenger.clip("idle"),
+        assets.get(crate::assets::Sheet::Passenger).clip("idle"),
         crate::animations::AnimState::default(),
         Transform::from_translation(stop.cave_pos.extend(z::PASSENGER)),
         LevelOwned,
@@ -390,9 +390,9 @@ fn vanish_into_cave(
 pub fn spawn_sign(commands: &mut Commands, assets: &GameAssets, pos: Vec2, address: u8) {
     commands.spawn((
         Sprite {
-            image: assets.signs.image.clone(),
+            image: assets.get(crate::assets::Sheet::Signs).image.clone(),
             texture_atlas: Some(TextureAtlas {
-                layout: assets.signs.layout.clone(),
+                layout: assets.get(crate::assets::Sheet::Signs).layout.clone(),
                 index: (address as usize).saturating_sub(1),
             }),
             ..default()

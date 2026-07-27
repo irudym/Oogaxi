@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, hash::Hash, sync::Arc};
 
 use crate::{
     animations::Clip,
@@ -8,30 +8,65 @@ use crate::{
 use bevy::prelude::*;
 use bevy_common_assets::json::JsonAssetPlugin;
 
-#[derive(Resource)]
-pub struct GameAssets {
-    pub copter: SpriteSheet,
-    pub signs: SpriteSheet,
-    pub passenger: SpriteSheet,
-    pub bubble: SpriteSheet,
-    //pub copter_layout: Handle<TextureAtlasLayout>,
-    /*
-    pub ptero_sheet: Handle<Image>,
-    pub ptero_layout: Handle<TextureAtlasLayout>,
-    pub passenger_sheet: Handle<Image>,
-    pub passenger_layout: Handle<TextureAtlasLayout>,
-    pub platform: Handle<Image>,
-    pub rock: Handle<Image>,
-    */
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
+pub enum Sheet {
+    Copter,
+    Signs,
+    Passenger,
+    Bubble,
+}
+
+impl Sheet {
+    fn path(self) -> &'static str {
+        match self {
+            Sheet::Copter => "sprites/copter42.sheet.json",
+            Sheet::Signs => "sprites/signs.sheet.json",
+            Sheet::Passenger => "sprites/caveman3.sheet.json",
+            Sheet::Bubble => "sprites/bubble.sheet.json",
+        }
+    }
 }
 
 #[derive(Resource)]
-struct PendingSheets {
-    copter: Handle<Spritesheet>,
-    signs: Handle<Spritesheet>,
-    passenger: Handle<Spritesheet>,
-    bubble: Handle<Spritesheet>,
-    // TODO: other sprites go here
+pub struct GameAssets {
+    sheets: HashMap<Sheet, SpriteSheet>,
+}
+
+impl GameAssets {
+    pub fn new() -> Self {
+        Self {
+            sheets: HashMap::new(),
+        }
+    }
+
+    pub fn get(&self, sheet: Sheet) -> &SpriteSheet {
+        &self.sheets[&sheet]
+    }
+
+    pub fn insert(&mut self, sheet: Sheet, sprite: SpriteSheet) {
+        let _ = &self.sheets.insert(sheet, sprite);
+    }
+}
+
+#[derive(Resource)]
+pub struct PendingSheets {
+    pub pending: HashMap<Sheet, Handle<Spritesheet>>,
+}
+
+impl PendingSheets {
+    pub fn new() -> Self {
+        Self {
+            pending: HashMap::new(),
+        }
+    }
+
+    pub fn get(&self, sheet: Sheet) -> &Handle<Spritesheet> {
+        &self.pending[&sheet]
+    }
+
+    pub fn load(&mut self, assets: &Res<AssetServer>, sheet: Sheet) {
+        self.pending.insert(sheet, assets.load(sheet.path()));
+    }
 }
 
 /// One Aseprite export, engine-side
@@ -63,12 +98,11 @@ impl Plugin for AssetsPlugin {
 }
 
 fn start_loading(mut commands: Commands, assets: Res<AssetServer>) {
-    commands.insert_resource(PendingSheets {
-        copter: assets.load("sprites/copter42.sheet.json"),
-        signs: assets.load("sprites/signs.sheet.json"),
-        passenger: assets.load("sprites/caveman3.sheet.json"),
-        bubble: assets.load("sprites/bubble.sheet.json"),
-    });
+    let mut pending_sheets = PendingSheets::new();
+    for sheet in [Sheet::Copter, Sheet::Signs, Sheet::Passenger, Sheet::Bubble] {
+        pending_sheets.load(&assets, sheet);
+    }
+    commands.insert_resource(pending_sheets);
 }
 
 /// Polls every frame while Loading
@@ -80,26 +114,21 @@ fn build_when_ready(
     mut layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut next: ResMut<NextState<AppState>>,
 ) {
-    let Some(copter) = sheets.get(&pending.copter) else {
+    let all_sheets = [Sheet::Copter, Sheet::Signs, Sheet::Passenger, Sheet::Bubble];
+
+    // pass 1, check if there are still pending loadings
+    if !all_sheets.iter().all(|s| sheets.contains(pending.get(*s))) {
         return; // still loading, - ask again next frame
-    };
+    }
 
-    let Some(signs) = sheets.get(&pending.signs) else {
-        return;
-    };
-    let Some(passenger) = sheets.get(&pending.passenger) else {
-        return;
-    };
-    let Some(bubble) = sheets.get(&pending.bubble) else {
-        return;
-    };
+    let mut game_assets = GameAssets::new();
 
-    commands.insert_resource(GameAssets {
-        copter: build_sheet(copter, &assets, &mut layouts),
-        signs: build_sheet(signs, &assets, &mut layouts),
-        passenger: build_sheet(passenger, &assets, &mut layouts),
-        bubble: build_sheet(bubble, &assets, &mut layouts),
-    });
+    for sheet in all_sheets {
+        let spritesheet = sheets.get(pending.get(sheet)).expect("already checked");
+        game_assets.insert(sheet, build_sheet(spritesheet, &assets, &mut layouts));
+    }
+
+    commands.insert_resource(game_assets);
     commands.remove_resource::<PendingSheets>();
     next.set(AppState::InGame);
 }

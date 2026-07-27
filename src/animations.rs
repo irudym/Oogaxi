@@ -67,7 +67,7 @@ fn select_copter_clip(
     mut players: Query<(&mut Clip, &mut AnimState, &ThrustInput, Has<Grounded>), With<Player>>,
 ) {
     for (mut clip, mut state, thrust, grounded) in &mut players {
-        let desired = assets.copter.clip(if grounded {
+        let desired = assets.get(crate::assets::Sheet::Copter).clip(if grounded {
             "idle"
         } else if thrust.vertical > 0.0 {
             "fly"
