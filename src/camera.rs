@@ -1,7 +1,9 @@
+use crate::states::IsPaused;
 use bevy::camera::{Hdr, ScalingMode};
 use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
 use bevy::prelude::*;
 
+use crate::effects::{Trauma, add_trauma_on_events, apply_shake};
 use crate::physics::Velocity;
 use crate::player::Player;
 
@@ -36,8 +38,18 @@ impl Plugin for CameraPlugin {
         app.register_type::<CameraConfig>()
             .init_resource::<CameraConfig>()
             .init_resource::<LevelBounds>()
+            .init_resource::<Trauma>()
             .add_systems(Startup, spawn_camera)
-            .add_systems(Update, (camera_follow, parallax.after(camera_follow)));
+            .add_systems(Update, (camera_follow, parallax.after(camera_follow)))
+            .add_systems(
+                Update,
+                (
+                    add_trauma_on_events,
+                    apply_shake
+                        .after(camera_follow)
+                        .run_if(in_state(IsPaused::Running)),
+                ),
+            );
     }
 }
 

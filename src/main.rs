@@ -4,6 +4,7 @@ mod bubble;
 mod camera;
 mod collision;
 mod colors;
+mod effects;
 mod game_rand;
 mod hazards;
 mod honk;

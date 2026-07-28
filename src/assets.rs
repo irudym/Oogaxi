@@ -99,6 +99,7 @@ impl Plugin for AssetsPlugin {
     }
 }
 
+/// Start loading all sheets in PendingSheets
 fn start_loading(mut commands: Commands, assets: Res<AssetServer>) {
     let mut pending_sheets = PendingSheets::new();
     for sheet in Sheet::iter() {
