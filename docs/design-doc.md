@@ -89,6 +89,11 @@ The passenger can unboard the copter only if the address on arrival is not equal
 ### Hazards
 **Pterodactyl** has a patrolling behaviour be default, when spot the player in the vicinity, shows a speech bubble with '!' and start attacking the player (dive attack).
 
+### Effects
+
+* **Screen Shake** - Trauma-based screen shake (Squirrel Eiserloh’s model — the reference) on severe impact.
+* **Dust** - Landing kicks up dust; a wall-scrape throws dust and sparks (in future segment);
+
 
 ### Proposals
 

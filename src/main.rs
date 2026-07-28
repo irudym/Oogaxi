@@ -13,6 +13,7 @@ mod integrity;
 mod levels;
 mod main_menu;
 mod messages;
+mod particles;
 mod passengers;
 mod physics;
 mod player;
@@ -35,6 +36,7 @@ use crate::camera::CameraPlugin;
 use crate::game_rand::GameRng;
 use crate::hazards::HazardPlugin;
 use crate::levels::TILE;
+use crate::particles::ParticlesPlugin;
 use crate::passengers::PassengerPlugin;
 use crate::physics::FlightConfig;
 use crate::{
@@ -77,6 +79,7 @@ fn main() {
         PassengerPlugin,
         HazardPlugin,
         BubblePlugin,
+        ParticlesPlugin,
     ));
     #[cfg(feature = "dev")]
     {
