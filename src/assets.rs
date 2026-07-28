@@ -7,8 +7,10 @@ use crate::{
 };
 use bevy::prelude::*;
 use bevy_common_assets::json::JsonAssetPlugin;
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy)]
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, EnumIter)]
 pub enum Sheet {
     Copter,
     Signs,
@@ -114,16 +116,14 @@ fn build_when_ready(
     mut layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut next: ResMut<NextState<AppState>>,
 ) {
-    let all_sheets = [Sheet::Copter, Sheet::Signs, Sheet::Passenger, Sheet::Bubble];
-
     // pass 1, check if there are still pending loadings
-    if !all_sheets.iter().all(|s| sheets.contains(pending.get(*s))) {
-        return; // still loading, - ask again next frame
+    if !Sheet::iter().all(|s| sheets.contains(pending.get(s))) {
+        return;
     }
 
     let mut game_assets = GameAssets::new();
 
-    for sheet in all_sheets {
+    for sheet in Sheet::iter() {
         let spritesheet = sheets.get(pending.get(sheet)).expect("already checked");
         game_assets.insert(sheet, build_sheet(spritesheet, &assets, &mut layouts));
     }
