@@ -101,7 +101,7 @@ impl Plugin for AssetsPlugin {
 
 fn start_loading(mut commands: Commands, assets: Res<AssetServer>) {
     let mut pending_sheets = PendingSheets::new();
-    for sheet in [Sheet::Copter, Sheet::Signs, Sheet::Passenger, Sheet::Bubble] {
+    for sheet in Sheet::iter() {
         pending_sheets.load(&assets, sheet);
     }
     commands.insert_resource(pending_sheets);
