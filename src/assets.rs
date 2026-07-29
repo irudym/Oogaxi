@@ -10,11 +10,15 @@ use bevy_common_assets::json::JsonAssetPlugin;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
+/// Sprite of the the game.
+/// Just add here new enum and add corresponding path in 'path' function implementation.
+/// The sprite will be load automatically and will be accessible by enum.
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug, EnumIter)]
 pub enum Sheet {
     Copter,
     Signs,
     Passenger,
+    Passenger2,
     Bubble,
 }
 
@@ -24,6 +28,7 @@ impl Sheet {
             Sheet::Copter => "sprites/copter42.sheet.json",
             Sheet::Signs => "sprites/signs.sheet.json",
             Sheet::Passenger => "sprites/caveman3.sheet.json",
+            Sheet::Passenger2 => "sprites/caveman4.sheet.json",
             Sheet::Bubble => "sprites/bubble.sheet.json",
         }
     }

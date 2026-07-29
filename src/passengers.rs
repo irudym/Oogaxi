@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use rand::RngExt;
 
+use crate::assets::Sheet;
 use crate::bubble::{Bubble, pop_bubble, spawn_bubble};
 use crate::collision::Grounded;
 use crate::game_rand::GameRng;
@@ -63,7 +64,13 @@ pub fn transition<Out: Bundle>(commands: &mut Commands, entity: Entity, into: im
     commands.entity(entity).remove::<Out>().insert(into);
 }
 
-fn spawn_passenger(commands: &mut Commands, assets: &GameAssets, stop: &Stop, destination: u8) {
+fn spawn_passenger(
+    commands: &mut Commands,
+    assets: &GameAssets,
+    stop: &Stop,
+    destination: u8,
+    sheet: Sheet,
+) {
     warn!(
         "Spawn a passenger at address: {}, pos: {}, need to get to: {}",
         stop.address, stop.cave_pos, destination
@@ -75,14 +82,14 @@ fn spawn_passenger(commands: &mut Commands, assets: &GameAssets, stop: &Stop, de
         },
         Emerging(Timer::from_seconds(0.4, TimerMode::Once)),
         Sprite {
-            image: assets.get(crate::assets::Sheet::Passenger).image.clone(),
+            image: assets.get(sheet).image.clone(),
             texture_atlas: Some(TextureAtlas {
-                layout: assets.get(crate::assets::Sheet::Passenger).layout.clone(),
+                layout: assets.get(sheet).layout.clone(),
                 index: 0,
             }),
             ..default()
         },
-        assets.get(crate::assets::Sheet::Passenger).clip("idle"),
+        assets.get(sheet).clip("idle"),
         crate::animations::AnimState::default(),
         Transform::from_translation(stop.cave_pos.extend(z::PASSENGER)),
         LevelOwned,
@@ -127,7 +134,11 @@ fn passenger_spawner(
             break s.address;
         }
     };
-    spawn_passenger(&mut commands, &assets, origin, destination);
+    let sheet = match rng.0.random_bool(0.5) {
+        true => Sheet::Passenger,
+        false => Sheet::Passenger2,
+    };
+    spawn_passenger(&mut commands, &assets, origin, destination, sheet);
 }
 
 // Locomotion for everyone who walks: one system, five states served
