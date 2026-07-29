@@ -10,3 +10,4 @@
     ```
 
 * ADR-0012: function spawn_dust has a hard wired value of the copter half size (16.0). Need to get the height from player's sprite.
+* ADR-0013: the frames should be the same size, otherwise spawn_player will create a wrong mesh, possible solution is to find the maximal frame.

@@ -12,6 +12,7 @@ mod input;
 mod integrity;
 mod levels;
 mod main_menu;
+mod materials;
 mod messages;
 mod particles;
 mod passengers;
@@ -24,6 +25,7 @@ mod steering;
 mod z;
 // mod zoo;
 
+use bevy::sprite_render::Material2dPlugin;
 use bevy::{prelude::*, window::PresentMode};
 
 use rand::SeedableRng;
@@ -36,6 +38,7 @@ use crate::camera::CameraPlugin;
 use crate::game_rand::GameRng;
 use crate::hazards::HazardPlugin;
 use crate::levels::TILE;
+use crate::materials::FlashMaterial;
 use crate::particles::ParticlesPlugin;
 use crate::passengers::PassengerPlugin;
 use crate::physics::FlightConfig;
@@ -80,6 +83,7 @@ fn main() {
         HazardPlugin,
         BubblePlugin,
         ParticlesPlugin,
+        Material2dPlugin::<FlashMaterial>::default(), //add shader
     ));
     #[cfg(feature = "dev")]
     {

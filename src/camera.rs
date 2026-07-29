@@ -62,7 +62,7 @@ fn spawn_camera(mut commands: Commands) {
         Camera { ..default() },
         Tonemapping::TonyMcMapface,
         DebandDither::Enabled,
-        // Bloom::default()
+        //Bloom::default(),
         Projection::Orthographic(OrthographicProjection {
             scaling_mode: ScalingMode::Fixed {
                 width: 640.0, // best modes: 640x360, 1280x720

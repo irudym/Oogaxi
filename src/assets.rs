@@ -81,6 +81,8 @@ pub struct SpriteSheet {
     pub image: Handle<Image>,
     pub layout: Handle<TextureAtlasLayout>,
     clips: HashMap<String, Clip>, // all lookups go through clip()
+    sheet_size: UVec2,
+    rects: Vec<URect>,
 }
 
 impl SpriteSheet {
@@ -91,6 +93,27 @@ impl SpriteSheet {
                 self.clips.keys().collect::<Vec<_>>()
             )
         })
+    }
+
+    /// Atlas frame -> UV rect (size.xy, offset.xy) for the shader
+    pub fn atlas_rect(&self, index: usize) -> Vec4 {
+        let r = self.rects[index]; // URect
+        let sheet = self.sheet_size.as_vec2(); //UVec2
+        Vec4::new(
+            r.width() as f32 / sheet.x,
+            r.height() as f32 / sheet.y,
+            r.min.x as f32 / sheet.x,
+            r.min.y as f32 / sheet.y,
+        )
+    }
+
+    pub fn get_frame_size(&self, index: usize) -> UVec2 {
+        if index > self.rects.len() {
+            UVec2::new(0, 0)
+        } else {
+            let rect = self.rects[index];
+            UVec2::new(rect.width(), rect.height())
+        }
     }
 }
 
@@ -147,11 +170,16 @@ fn build_sheet(
 ) -> SpriteSheet {
     let (size, rects, filename, animations) = convert(sheet);
     let mut layout = TextureAtlasLayout::new_empty(size);
+
+    let sheet_rects = rects.clone();
     for rect in rects {
         layout.add_texture(rect);
     }
 
     SpriteSheet {
+        //for shaders, keep the rects and size
+        rects: sheet_rects,
+        sheet_size: size,
         image: assets.load(format!("sprites/{}", filename)),
         layout: layouts.add(layout),
 

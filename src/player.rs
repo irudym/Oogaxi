@@ -4,6 +4,7 @@ use crate::{
     input::input_map_for,
     integrity::Integrity,
     levels::LevelOwned,
+    materials::FlashMaterial,
     physics::{
         FlightConfig, PhysicalTranslation, PreviousPhysicalTranslation, ThrustInput, Velocity,
     },
@@ -11,6 +12,8 @@ use crate::{
     z::z,
 };
 use bevy::prelude::*;
+
+use crate::assets::Sheet;
 
 #[derive(Component)]
 pub struct Player;
@@ -31,28 +34,37 @@ pub fn spawn_player(
     assets: &Res<GameAssets>,
     pos: Vec2,
     cfg: &FlightConfig,
+    meshes: &mut Assets<Mesh>,
+    materials: &mut Assets<FlashMaterial>,
 ) {
+    let sheet = &assets.get(Sheet::Copter);
+    let (idle_frame, _) = sheet.clip("idle").frames[0];
+
+    let frame_size = sheet.get_frame_size(idle_frame); // TODO: disaster in case of different frame sizes
+
     let player_id: u8 = 1;
-    let col_size = Vec2::new(42.0, 42.0) * 0.98 / 2.0; // TODO: need to get the frame size from atlas.
+    let col_size = Vec2::new(frame_size.x as f32, frame_size.y as f32) * 0.98 / 2.0; // TODO: need to get the frame size from atlas.
     info!(
         "Spawn player with position: {} and velocity: {:?} ",
         pos,
         Velocity::default()
     );
+
     // the player: a marker, sprite, position
     commands.spawn((
         Player,
         PlayerId(player_id),
         input_map_for(player_id),
-        Sprite {
-            image: assets.get(crate::assets::Sheet::Copter).image.clone(),
-            texture_atlas: Some(TextureAtlas {
-                layout: assets.get(crate::assets::Sheet::Copter).layout.clone(),
-                index: 0,
-            }),
-            ..default()
-        },
-        assets.get(crate::assets::Sheet::Copter).clip("idle"),
+        (
+            Mesh2d(meshes.add(Rectangle::new(frame_size.x as f32, frame_size.y as f32))),
+            MeshMaterial2d(materials.add(FlashMaterial {
+                tint: LinearRgba::WHITE,
+                amount: 0.0,
+                atlas_rect: sheet.atlas_rect(idle_frame),
+                sprite: Some(sheet.image.clone()),
+            })),
+        ),
+        sheet.clip("idle"),
         crate::animations::AnimState::default(),
         Transform::from_xyz(pos.x, pos.y, z::PLAYER),
         Collider { half: col_size },

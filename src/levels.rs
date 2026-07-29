@@ -1,4 +1,4 @@
-use crate::{assets::GameAssets, physics::FlightConfig};
+use crate::{assets::GameAssets, materials::FlashMaterial, physics::FlightConfig};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
@@ -273,6 +273,8 @@ fn convert_editor_entities(
     layers: Query<&LayerMetadata>,
     parents: Query<&ChildOf>,
     grid: Option<Res<TileGrid>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<FlashMaterial>>,
 ) {
     let Some(grid) = grid else {
         return;
@@ -347,7 +349,14 @@ fn convert_editor_entities(
             .unwrap_or(0);
         match inst.identifier.as_str() {
             "TaxiStop" | "CaveEntrance" => {} // consumed above
-            "PlayerSpawn" => crate::player::spawn_player(&mut commands, &assets, pos, &cfg),
+            "PlayerSpawn" => crate::player::spawn_player(
+                &mut commands,
+                &assets,
+                pos,
+                &cfg,
+                &mut meshes,
+                &mut materials,
+            ),
             "Pterodactyl" => {
                 let route: Vec<IVec2> = inst
                     .get_maybe_points_field("patrol")

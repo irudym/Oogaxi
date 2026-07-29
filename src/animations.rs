@@ -4,6 +4,7 @@ use std::sync::Arc;
 use crate::assets::GameAssets;
 use crate::collision::Grounded;
 use crate::integrity::Invulnerable;
+use crate::materials::FlashMaterial;
 use crate::physics::{ThrustInput, Velocity};
 use crate::player::Player;
 
@@ -47,7 +48,8 @@ impl Plugin for AnimationPlugin {
                 select_copter_clip.run_if(resource_exists::<GameAssets>),
                 animate_sprites.after(select_copter_clip),
                 face_travel_direction,
-                damage_blink,
+                damage_flash,
+                animate_meshes.run_if(resource_exists::<GameAssets>),
             ),
         );
 
@@ -58,6 +60,34 @@ impl Plugin for AnimationPlugin {
                 }
             },
         );
+    }
+}
+
+fn animate_meshes(
+    time: Res<Time>,
+    assets: Res<GameAssets>,
+    mut materials: ResMut<Assets<FlashMaterial>>,
+    mut query: Query<(&Clip, &mut AnimState, &MeshMaterial2d<FlashMaterial>)>,
+) {
+    for (clip, mut state, handle) in &mut query {
+        state.timer.tick(time.delta());
+        if !state.timer.is_finished() {
+            continue;
+        }
+        let last = clip.frames.len() - 1;
+        if state.frame < last {
+            state.frame += 1;
+        } else if clip.looped {
+            state.frame = 0;
+        }
+
+        let (atlas_index, secs) = clip.frames[state.frame];
+        state.timer = Timer::from_seconds(secs, TimerMode::Once);
+        if let Some(mut mat) = materials.get_mut(&handle.0) {
+            mat.atlas_rect = assets
+                .get(crate::assets::Sheet::Copter)
+                .atlas_rect(atlas_index);
+        }
     }
 }
 
@@ -115,5 +145,21 @@ fn damage_blink(time: Res<Time>, mut blinkers: Query<&mut Sprite, With<Invulnera
     let visible = (time.elapsed_secs() * 10.0) as u32 % 2 == 0;
     for mut sprite in &mut blinkers {
         sprite.color = sprite.color.with_alpha(if visible { 1.0 } else { 0.25 });
+    }
+}
+
+fn damage_flash(
+    //time: Res<Time>,
+    mut materials: ResMut<Assets<FlashMaterial>>,
+    flashers: Query<(&MeshMaterial2d<FlashMaterial>, &Invulnerable)>,
+) {
+    for (handle, invul) in &flashers {
+        let Some(mut mat) = materials.get_mut(&handle.0) else {
+            return;
+        };
+
+        // Sharp spike, quick decay - a flash, not a pulse
+        let t = invul.0.fraction();
+        mat.amount = (1.0 - t * 4.0).max(0.0);
     }
 }

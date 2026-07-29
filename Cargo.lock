@@ -4400,6 +4400,7 @@ dependencies = [
  "bevy-inspector-egui",
  "bevy_common_assets",
  "bevy_ecs_ldtk",
+ "bevy_render",
  "leafwing-input-manager",
  "rand",
  "serde",
