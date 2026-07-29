@@ -8,3 +8,5 @@
     have camera_follow write the base position/rotation, 
     and apply_shake compute base + shake each frame from a stored base.
     ```
+
+* ADR-0012: function spawn_dust has a hard wired value of the copter half size (16.0). Need to get the height from player's sprite.

@@ -29,7 +29,7 @@ fn spawn_dust(
     at: Vec2,
     intensity: f32,
 ) {
-    let pos = Vec3::new(at.x, at.y - 16.0, z::FX);
+    let pos = Vec3::new(at.x, at.y - 16.0, z::FX); //where 16.0 is offset to the copter bottom
     let count = (8.0 + intensity * 40.0) as usize;
     for _ in 0..count {
         let side = if rng.0.random_bool(0.5) { 1.0 } else { -1.0 };
@@ -48,7 +48,7 @@ fn spawn_dust(
             Transform::from_translation(pos),
             Velocity(vel),
             LifeTime(Timer::from_seconds(
-                rng.0.random_range(0.3..0.7),
+                rng.0.random_range(0.5..1.3),
                 TimerMode::Once,
             )),
             DespawnOnExit(AppState::InGame),
