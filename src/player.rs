@@ -21,14 +21,6 @@ pub struct Player;
 #[derive(Component)]
 pub struct PlayerId(pub u8);
 
-pub struct PlayerPlugin;
-
-impl Plugin for PlayerPlugin {
-    fn build(&self, app: &mut App) {
-        // future code will be here
-    }
-}
-
 pub fn spawn_player(
     commands: &mut Commands,
     assets: &Res<GameAssets>,

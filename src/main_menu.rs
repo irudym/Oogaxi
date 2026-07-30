@@ -37,50 +37,48 @@ pub fn setup_main_menu(mut commands: Commands) {
             },
             DespawnOnExit(AppState::Menu),
         ))
-        .with_children(
-            (|root| {
-                root.spawn((
-                    Text::new("Oogaxi: Through the Taxiverse"),
-                    TextFont {
-                        font_size: FontSize::Px(48.0),
-                        ..default()
-                    },
-                    Node {
-                        margin: UiRect::bottom(Val::Px(40.0)),
-                        ..default()
-                    },
-                ));
+        .with_children(|root| {
+            root.spawn((
+                Text::new("Oogaxi: Through the Taxiverse"),
+                TextFont {
+                    font_size: FontSize::Px(48.0),
+                    ..default()
+                },
+                Node {
+                    margin: UiRect::bottom(Val::Px(40.0)),
+                    ..default()
+                },
+            ));
 
-                for (i, action) in MENU_ITEMS.iter().enumerate() {
-                    let label = match action {
-                        MenuAction::Play => "Play",
-                        MenuAction::Options => "Options",
-                        MenuAction::Quit => "Quit",
-                    };
-                    root.spawn((
-                        *action,
-                        MenuIndex(i),
-                        Button,
-                        Node {
-                            width: Val::Px(220.0),
-                            padding: UiRect::all(Val::Px(10.0)),
-                            justify_content: JustifyContent::Center,
+            for (i, action) in MENU_ITEMS.iter().enumerate() {
+                let label = match action {
+                    MenuAction::Play => "Play",
+                    MenuAction::Options => "Options",
+                    MenuAction::Quit => "Quit",
+                };
+                root.spawn((
+                    *action,
+                    MenuIndex(i),
+                    Button,
+                    Node {
+                        width: Val::Px(220.0),
+                        padding: UiRect::all(Val::Px(10.0)),
+                        justify_content: JustifyContent::Center,
+                        ..default()
+                    },
+                    BackgroundColor(GameColors::REST),
+                ))
+                .with_children(|b| {
+                    b.spawn((
+                        Text::new(label),
+                        TextFont {
+                            font_size: FontSize::Px(28.0),
                             ..default()
                         },
-                        BackgroundColor(GameColors::REST),
-                    ))
-                    .with_children(|b| {
-                        b.spawn((
-                            Text::new(label),
-                            TextFont {
-                                font_size: FontSize::Px(28.0),
-                                ..default()
-                            },
-                        ));
-                    });
-                }
-            }),
-        );
+                    ));
+                });
+            }
+        });
 }
 
 pub fn menu_mouse_system(

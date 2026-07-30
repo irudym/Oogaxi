@@ -1,3 +1,4 @@
+use crate::layers::WORLD_LAYER;
 use crate::states::IsPaused;
 use bevy::camera::{Hdr, ScalingMode, visibility::RenderLayers};
 use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
@@ -77,11 +78,11 @@ fn spawn_camera(mut commands: Commands) {
             },
             ..OrthographicProjection::default_2d()
         }),
-        RenderLayers::layer(0),
+        RenderLayers::layer(WORLD_LAYER),
     ));
 }
 
-fn camera_follow(
+pub fn camera_follow(
     time: Res<Time>,
     config: Res<CameraConfig>,
     bounds: Res<LevelBounds>,

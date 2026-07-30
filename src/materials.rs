@@ -5,6 +5,7 @@ use bevy::sprite_render::{AlphaMode2d, Material2d};
 
 const FLASH_SHADER: &str = "shaders/flash.wgsl";
 const SCREEN_SHADER: &str = "shaders/screen_look.wgsl";
+const LIGHT_COMPOSITE_SHADER: &str = "shaders/light_composite.wgsl";
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct FlashMaterial {
@@ -38,6 +39,23 @@ pub struct ScreenMaterial {
 impl Material2d for ScreenMaterial {
     fn fragment_shader() -> ShaderRef {
         SCREEN_SHADER.into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode2d {
+        AlphaMode2d::Blend
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct LightCompositeMaterial {
+    #[texture(0)]
+    #[sampler(1)]
+    pub light_map: Option<Handle<Image>>,
+}
+
+impl Material2d for LightCompositeMaterial {
+    fn fragment_shader() -> ShaderRef {
+        LIGHT_COMPOSITE_SHADER.into()
     }
 
     fn alpha_mode(&self) -> AlphaMode2d {

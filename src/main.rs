@@ -7,9 +7,9 @@ mod colors;
 mod effects;
 mod game_rand;
 mod hazards;
-mod honk;
 mod input;
 mod integrity;
+mod layers;
 mod levels;
 mod lights;
 mod main_menu;
@@ -40,7 +40,10 @@ use crate::camera::CameraPlugin;
 use crate::game_rand::GameRng;
 use crate::hazards::HazardPlugin;
 use crate::levels::TILE;
-use crate::materials::{FlashMaterial, ScreenMaterial};
+use crate::lights::LightPlugin;
+use crate::materials::{FlashMaterial, LightCompositeMaterial, ScreenMaterial};
+#[cfg(feature = "dev")]
+use crate::overlay::OverlayCamera;
 use crate::particles::ParticlesPlugin;
 use crate::passengers::PassengerPlugin;
 use crate::physics::FlightConfig;
@@ -55,6 +58,7 @@ fn main() {
     debug_assert!(cfg.max_speed / 64.0 < TILE);
 
     let mut app = App::new();
+
     app.add_plugins(
         DefaultPlugins
             .set(WindowPlugin {
@@ -86,19 +90,39 @@ fn main() {
             HazardPlugin,
             BubblePlugin,
             ParticlesPlugin,
+            LightPlugin,
         ),
         (
             Material2dPlugin::<FlashMaterial>::default(),
             Material2dPlugin::<ScreenMaterial>::default(),
+            Material2dPlugin::<LightCompositeMaterial>::default(),
         ), //add shaders
     ));
+
     #[cfg(feature = "dev")]
     {
-        use bevy_inspector_egui::bevy_egui::EguiPlugin;
+        use bevy_inspector_egui::bevy_egui::{EguiGlobalSettings, EguiPlugin};
         use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
-        app.add_plugins(EguiPlugin::default())
-            .add_plugins(ResourceInspectorPlugin::<physics::FlightConfig>::default());
+        use crate::overlay::spawn_post_process;
+
+        app.insert_resource(EguiGlobalSettings {
+            auto_create_primary_context: false,
+            ..default()
+        })
+        .add_plugins(EguiPlugin::default())
+        .add_plugins(ResourceInspectorPlugin::<physics::FlightConfig>::default())
+        .add_systems(Startup, attach_egui_to_overlay.after(spawn_post_process));
     }
+
     app.run();
+}
+
+#[cfg(feature = "dev")]
+fn attach_egui_to_overlay(mut commands: Commands, overlay: Query<Entity, With<OverlayCamera>>) {
+    if let Ok(camera) = overlay.single() {
+        commands
+            .entity(camera)
+            .insert(bevy_inspector_egui::bevy_egui::PrimaryEguiContext);
+    }
 }

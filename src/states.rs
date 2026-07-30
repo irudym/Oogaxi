@@ -141,8 +141,6 @@ fn ingame_input(
     players: Query<&ActionState<Action>>,
     paused: Res<State<IsPaused>>,
     mut next_pause: ResMut<NextState<IsPaused>>,
-    mut crashed: MessageWriter<CopterCrashed>,
-    mut delivered: MessageWriter<PassengerDelivered>,
 ) {
     for actions in players {
         if actions.just_pressed(&Action::Pause) {

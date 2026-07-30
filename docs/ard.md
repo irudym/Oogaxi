@@ -11,3 +11,14 @@
 
 * ADR-0012: function spawn_dust has a hard wired value of the copter half size (16.0). Need to get the height from player's sprite.
 * ADR-0013: the frames should be the same size, otherwise spawn_player will create a wrong mesh, possible solution is to find the maximal frame.
+* ADR-0014: 
+  * The game has the following render layers: 
+    * 0 - world rendering
+    * 1 - post process overlay: vignette, scan, VHS effect
+    * 2 - lights
+* ADR-0015: two quads of postprocessing (post and light)= could be merged into one, by updating the shader:
+  ```lang=wgsl
+      let light = textureSample(light_map, light_sampler, mesh.uv).rgb;
+      let vignette = 1.0 - smoothstep(0.35, 0.85, distance(mesh.uv, vec2(0.5))) * params.x;
+      // combine both darkenings into one output
+  ```

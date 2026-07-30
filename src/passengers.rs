@@ -304,7 +304,7 @@ fn finish_boarding(
 }
 
 /// The economy's heartbeat, fixed clock, so pause freezes the meter free.
-fn fare_decay(cfg: Res<FlightConfig>, time: Res<Time>, mut fares: Query<&mut Fare, With<Riding>>) {
+fn fare_decay(cfg: Res<FlightConfig>, time: Res<Time>, fares: Query<&mut Fare, With<Riding>>) {
     for mut fare in fares {
         fare.0 = (fare.0 - cfg.fare_decay * time.delta_secs()).max(cfg.fare_min);
     }

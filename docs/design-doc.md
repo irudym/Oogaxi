@@ -95,6 +95,14 @@ The passenger can unboard the copter only if the address on arrival is not equal
 * **Dust** - Landing kicks up dust; a wall-scrape throws dust and sparks (in future segment);
 
 
+### Lighting System
+
+THe lighting system consists of three pieces:
+- Offscreen texture
+- A camera, that renders only lights
+- A material, that multiplies it over the scene  
+
+
 ### Proposals
 
 #### Honking

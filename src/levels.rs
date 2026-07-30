@@ -275,6 +275,7 @@ fn convert_editor_entities(
     grid: Option<Res<TileGrid>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<FlashMaterial>>,
+    mut color_mat: ResMut<Assets<ColorMaterial>>,
 ) {
     let Some(grid) = grid else {
         return;
@@ -307,7 +308,7 @@ fn convert_editor_entities(
                 crate::passengers::spawn_cave(&mut commands, &assets, pos);
             }
             "Torch" => {
-                crate::lights::spawn_torch(&mut commands, pos);
+                crate::lights::spawn_torch(&mut commands, &mut meshes, &mut color_mat, &grid, pos);
             }
             _ => {}
         }
