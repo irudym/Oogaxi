@@ -1,11 +1,14 @@
 use crate::states::IsPaused;
-use bevy::camera::{Hdr, ScalingMode};
+use bevy::camera::{Hdr, ScalingMode, visibility::RenderLayers};
 use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
+use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
 
 use crate::effects::{Trauma, add_trauma_on_events, apply_shake};
 use crate::physics::Velocity;
 use crate::player::Player;
+
+use crate::overlay::spawn_post_process;
 
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
@@ -24,6 +27,9 @@ impl Default for CameraConfig {
     }
 }
 
+#[derive(Component)]
+pub struct GameCamera;
+
 ///World-space rect the camera may show, written by levels.rs on level spawn.
 #[derive(Resource, Default)]
 pub struct LevelBounds {
@@ -39,7 +45,7 @@ impl Plugin for CameraPlugin {
             .init_resource::<CameraConfig>()
             .init_resource::<LevelBounds>()
             .init_resource::<Trauma>()
-            .add_systems(Startup, spawn_camera)
+            .add_systems(Startup, (spawn_camera, spawn_post_process).chain())
             .add_systems(Update, (camera_follow, parallax.after(camera_follow)))
             .add_systems(
                 Update,
@@ -57,12 +63,13 @@ impl Plugin for CameraPlugin {
 /// (HDR + tonemapping + dither)
 fn spawn_camera(mut commands: Commands) {
     commands.spawn((
+        GameCamera,
         Camera2d,
         Hdr,
         Camera { ..default() },
         Tonemapping::TonyMcMapface,
         DebandDither::Enabled,
-        //Bloom::default(),
+        Bloom::default(),
         Projection::Orthographic(OrthographicProjection {
             scaling_mode: ScalingMode::Fixed {
                 width: 640.0, // best modes: 640x360, 1280x720
@@ -70,6 +77,7 @@ fn spawn_camera(mut commands: Commands) {
             },
             ..OrthographicProjection::default_2d()
         }),
+        RenderLayers::layer(0),
     ));
 }
 
@@ -78,7 +86,7 @@ fn camera_follow(
     config: Res<CameraConfig>,
     bounds: Res<LevelBounds>,
     player: Query<(&Transform, &Velocity), With<Player>>,
-    mut camera: Query<(&mut Transform, &Projection), (With<Camera2d>, Without<Player>)>,
+    mut camera: Query<(&mut Transform, &Projection), (With<GameCamera>, Without<Player>)>,
 ) {
     // Query, not Single as the player does not exist during level lead
     // and the dev inspector can add cameras.
@@ -141,7 +149,7 @@ pub struct ParallaxLayer {
 }
 
 fn parallax(
-    camera: Query<&Transform, (With<Camera2d>, Without<ParallaxLayer>)>,
+    camera: Query<&Transform, (With<GameCamera>, Without<ParallaxLayer>)>,
     mut layers: Query<(&mut Transform, &ParallaxLayer)>,
 ) {
     let Ok(cam) = camera.single() else { return };

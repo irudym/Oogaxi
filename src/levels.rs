@@ -306,6 +306,9 @@ fn convert_editor_entities(
                 caves.push((*addr as u8, pos));
                 crate::passengers::spawn_cave(&mut commands, &assets, pos);
             }
+            "Torch" => {
+                crate::lights::spawn_torch(&mut commands, pos);
+            }
             _ => {}
         }
     }

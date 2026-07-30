@@ -11,9 +11,11 @@ mod honk;
 mod input;
 mod integrity;
 mod levels;
+mod lights;
 mod main_menu;
 mod materials;
 mod messages;
+mod overlay;
 mod particles;
 mod passengers;
 mod physics;
@@ -38,7 +40,7 @@ use crate::camera::CameraPlugin;
 use crate::game_rand::GameRng;
 use crate::hazards::HazardPlugin;
 use crate::levels::TILE;
-use crate::materials::FlashMaterial;
+use crate::materials::{FlashMaterial, ScreenMaterial};
 use crate::particles::ParticlesPlugin;
 use crate::passengers::PassengerPlugin;
 use crate::physics::FlightConfig;
@@ -69,21 +71,26 @@ fn main() {
     )
     .insert_resource(GameRng(StdRng::seed_from_u64(0xB00)))
     .add_plugins((
-        CameraPlugin,
-        StatesPlugin,
-        ScorePlugin,
-        PhysicsPlugin,
-        InputPlugin,
-        LevelPlugin,
-        CollisionPlugin,
-        IntegrityPlugin,
-        AnimationPlugin,
-        AssetsPlugin,
-        PassengerPlugin,
-        HazardPlugin,
-        BubblePlugin,
-        ParticlesPlugin,
-        Material2dPlugin::<FlashMaterial>::default(), //add shader
+        (
+            CameraPlugin,
+            StatesPlugin,
+            ScorePlugin,
+            PhysicsPlugin,
+            InputPlugin,
+            LevelPlugin,
+            CollisionPlugin,
+            IntegrityPlugin,
+            AnimationPlugin,
+            AssetsPlugin,
+            PassengerPlugin,
+            HazardPlugin,
+            BubblePlugin,
+            ParticlesPlugin,
+        ),
+        (
+            Material2dPlugin::<FlashMaterial>::default(),
+            Material2dPlugin::<ScreenMaterial>::default(),
+        ), //add shaders
     ));
     #[cfg(feature = "dev")]
     {

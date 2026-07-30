@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use rand::RngExt;
 
 use crate::{
+    camera::GameCamera,
     game_rand::GameRng,
     messages::{CopterDamaged, Landed},
 };
@@ -28,7 +29,7 @@ pub fn apply_shake(
     time: Res<Time>,
     mut trauma: ResMut<Trauma>,
     mut rng: ResMut<GameRng>,
-    mut camera: Query<&mut Transform, With<Camera2d>>,
+    mut camera: Query<&mut Transform, With<GameCamera>>,
 ) {
     if trauma.0 <= 0.000001 {
         return; // not just a CPU saving: don't touch the camera when not shaking!

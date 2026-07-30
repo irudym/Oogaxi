@@ -160,6 +160,9 @@ fn damage_flash(
 
         // Sharp spike, quick decay - a flash, not a pulse
         let t = invul.0.fraction();
-        mat.amount = (1.0 - t * 4.0).max(0.0);
+        // Decay curve:
+        // sharp: (1.0 - t * 4.0).max(0.0);
+        // soft: (1.0 - t).powi(3)
+        mat.amount = (1.0 - t).powi(3);
     }
 }
