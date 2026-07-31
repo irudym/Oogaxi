@@ -21,6 +21,7 @@ pub enum Sheet {
     Passenger2,
     Bubble,
     LightGradient,
+    Water,
 }
 
 impl Sheet {
@@ -32,6 +33,7 @@ impl Sheet {
             Sheet::Passenger2 => "sprites/caveman4.sheet.json",
             Sheet::Bubble => "sprites/bubble.sheet.json",
             Sheet::LightGradient => "sprites/lightmap2.sheet.json",
+            Sheet::Water => "sprites/water.sheet.json",
         }
     }
 }

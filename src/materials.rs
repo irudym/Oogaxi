@@ -1,4 +1,3 @@
-use bevy::material::descriptor;
 use bevy::mesh::MeshVertexBufferLayoutRef;
 use bevy::prelude::*;
 use bevy::render::render_resource::AsBindGroup;
@@ -11,6 +10,8 @@ use bevy_render::render_resource::{
 const FLASH_SHADER: &str = "shaders/flash.wgsl";
 const SCREEN_SHADER: &str = "shaders/screen_look.wgsl";
 const LIGHT_COMPOSITE_SHADER: &str = "shaders/light_composite.wgsl";
+const LIGHT_SHADER: &str = "shaders/light.wgsl";
+const WATER_SHADER: &str = "shaders/water.wgsl";
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct FlashMaterial {
@@ -91,5 +92,64 @@ impl Material2d for LightCompositeMaterial {
             }
         }
         Ok(())
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct LightMaterial {
+    #[uniform(0)]
+    pub color: LinearRgba,
+}
+
+impl Material2d for LightMaterial {
+    fn fragment_shader() -> ShaderRef {
+        LIGHT_SHADER.into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode2d {
+        AlphaMode2d::Blend
+    }
+
+    fn specialize(
+        descriptor: &mut RenderPipelineDescriptor,
+        _layout: &MeshVertexBufferLayoutRef,
+        _key: Material2dKey<Self>,
+    ) -> Result<(), SpecializedMeshPipelineError> {
+        if let Some(fragment) = &mut descriptor.fragment {
+            if let Some(Some(target)) = fragment.targets.get_mut(0) {
+                target.blend = Some(BlendState {
+                    color: BlendComponent {
+                        src_factor: bevy_render::render_resource::BlendFactor::SrcAlpha,
+                        dst_factor: bevy_render::render_resource::BlendFactor::One,
+                        operation: bevy_render::render_resource::BlendOperation::Add,
+                    },
+                    alpha: BlendComponent {
+                        src_factor: bevy_render::render_resource::BlendFactor::One,
+                        dst_factor: bevy_render::render_resource::BlendFactor::One,
+                        operation: bevy_render::render_resource::BlendOperation::Add,
+                    },
+                });
+            }
+        }
+        Ok(())
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct WaterMaterial {
+    #[uniform(0)]
+    pub params: Vec4, // x - time, y - shimmer, z - ting mix, w - unused
+    #[texture(1)]
+    #[sampler(2)]
+    pub noise_texture: Option<Handle<Image>>,
+}
+
+impl Material2d for WaterMaterial {
+    fn fragment_shader() -> ShaderRef {
+        WATER_SHADER.into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode2d {
+        AlphaMode2d::Blend
     }
 }

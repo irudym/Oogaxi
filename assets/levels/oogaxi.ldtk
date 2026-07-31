@@ -11,7 +11,7 @@
 	"iid": "bdd073c0-6fc0-11f1-93d7-998a6e705c54",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 147,
+	"nextUid": 148,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -1323,6 +1323,41 @@
 			"pivotX": 0,
 			"pivotY": 0,
 			"fieldDefs": []
+		},
+		{
+			"identifier": "Water",
+			"uid": 147,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 16,
+			"height": 16,
+			"resizableX": true,
+			"resizableY": true,
+			"minWidth": 16,
+			"maxWidth": null,
+			"minHeight": 16,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 1,
+			"lineOpacity": 1,
+			"hollow": false,
+			"color": "#2CE8F5",
+			"renderMode": "Rectangle",
+			"showName": true,
+			"tilesetId": null,
+			"tileRenderMode": "FitInside",
+			"tileRect": null,
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -1653,6 +1688,22 @@
 							"fieldInstances": [],
 							"__worldX": 288,
 							"__worldY": 176
+						},
+						{
+							"__identifier": "Water",
+							"__grid": [0,21],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#2CE8F5",
+							"iid": "65b230e0-6fc0-11f1-b672-dfa60189e592",
+							"width": 640,
+							"height": 48,
+							"defUid": 147,
+							"px": [0,336],
+							"fieldInstances": [],
+							"__worldX": 0,
+							"__worldY": 336
 						}
 					]
 				},
@@ -2447,6 +2498,22 @@
 							"fieldInstances": [],
 							"__worldX": 800,
 							"__worldY": -160
+						},
+						{
+							"__identifier": "Water",
+							"__grid": [0,40],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#2CE8F5",
+							"iid": "05be7b20-6fc0-11f1-b672-05af0fe635ae",
+							"width": 704,
+							"height": 48,
+							"defUid": 147,
+							"px": [0,640],
+							"fieldInstances": [],
+							"__worldX": 688,
+							"__worldY": 336
 						}
 					]
 				},

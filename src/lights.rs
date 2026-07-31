@@ -7,8 +7,8 @@ use bevy::{
 use bevy_render::render_resource::{Texture, TextureFormat::Rgba8UnormSrgb};
 use rand::RngExt;
 
+use crate::materials::LightMaterial;
 use crate::{
-    assets::{GameAssets, Sheet::LightGradient},
     camera::{GameCamera, camera_follow},
     colors::GameColors,
     game_rand::GameRng,
@@ -128,13 +128,19 @@ pub struct Flicker {
 fn flicker_lights(
     time: Res<Time>,
     mut rng: ResMut<GameRng>,
-    mut lights: Query<(&mut Sprite, &mut Flicker, &Light2d)>,
+    mut materials: ResMut<Assets<LightMaterial>>,
+    mut lights: Query<(&MeshMaterial2d<LightMaterial>, &mut Flicker, &Light2d)>,
 ) {
-    for (mut sprite, mut flicker, light) in &mut lights {
+    for (handle, mut flicker, light) in &mut lights {
         let target = rng.0.random_range(0.82..1.0);
-        let alpha = 1.0 - (-0.9 * time.delta_secs()).exp();
+        let alpha = 1.0 - (-9.0 * time.delta_secs()).exp();
         flicker.phase += (target - flicker.phase) * alpha;
-        sprite.color = light.color.with_alpha(flicker.phase * light.intensity);
+        if let Some(mut mat) = materials.get_mut(&handle.0) {
+            mat.color = light
+                .color
+                .with_alpha(flicker.phase * light.intensity)
+                .into();
+        }
     }
 }
 
@@ -205,7 +211,7 @@ struct Torch;
 pub fn spawn_torch(
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
-    materials: &mut Assets<ColorMaterial>,
+    materials: &mut Assets<LightMaterial>,
     grid: &TileGrid,
     pos: Vec2,
 ) {
@@ -227,13 +233,12 @@ pub fn spawn_torch(
         Light2d {
             radius,
             color: GameColors::TORCH_FLAME,
-            intensity: 1.0,
+            intensity: 0.6,
         },
         Flicker { phase: 0.0 },
         Mesh2d(meshes.add(light_fan_mesh(pos, &rim))),
-        MeshMaterial2d(materials.add(ColorMaterial {
-            color: GameColors::TORCH_FLAME,
-            ..default()
+        MeshMaterial2d(materials.add(LightMaterial {
+            color: GameColors::TORCH_FLAME.into(),
         })),
         Transform::from_translation(pos.extend(0.0)),
         RenderLayers::layer(LIGHT_LAYER),

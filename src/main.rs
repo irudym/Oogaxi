@@ -24,6 +24,7 @@ mod score;
 mod spritesheet;
 mod states;
 mod steering;
+mod water;
 mod z;
 // mod zoo;
 
@@ -41,12 +42,15 @@ use crate::game_rand::GameRng;
 use crate::hazards::HazardPlugin;
 use crate::levels::TILE;
 use crate::lights::LightPlugin;
-use crate::materials::{FlashMaterial, LightCompositeMaterial, ScreenMaterial};
+use crate::materials::{
+    FlashMaterial, LightCompositeMaterial, LightMaterial, ScreenMaterial, WaterMaterial,
+};
 #[cfg(feature = "dev")]
 use crate::overlay::OverlayCamera;
 use crate::particles::ParticlesPlugin;
 use crate::passengers::PassengerPlugin;
 use crate::physics::FlightConfig;
+use crate::water::WaterPlugin;
 use crate::{
     bubble::BubblePlugin, collision::CollisionPlugin, input::InputPlugin,
     integrity::IntegrityPlugin, levels::LevelPlugin, physics::PhysicsPlugin, score::ScorePlugin,
@@ -89,13 +93,14 @@ fn main() {
             PassengerPlugin,
             HazardPlugin,
             BubblePlugin,
-            ParticlesPlugin,
-            LightPlugin,
         ),
+        (WaterPlugin, ParticlesPlugin, LightPlugin),
         (
             Material2dPlugin::<FlashMaterial>::default(),
             Material2dPlugin::<ScreenMaterial>::default(),
             Material2dPlugin::<LightCompositeMaterial>::default(),
+            Material2dPlugin::<LightMaterial>::default(),
+            Material2dPlugin::<WaterMaterial>::default(),
         ), //add shaders
     ));
 

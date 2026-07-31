@@ -8,4 +8,5 @@ pub mod z {
     pub const PLAYER: f32 = 10.0;
     pub const FX: f32 = 15.0;
     pub const LIGHTS: f32 = 9.0;
+    pub const WATER: f32 = 20.0;
 }

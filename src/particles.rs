@@ -14,13 +14,13 @@ const DUST_GRAVITY: f32 = 60.0;
 const DUST_DRAG: f32 = 3.5;
 
 #[derive(Component)]
-struct Particle;
+pub struct Particle;
 
 #[derive(Component)]
-struct Fade(f32);
+pub struct Fade(pub f32);
 
 #[derive(Component)]
-struct LifeTime(Timer);
+pub struct LifeTime(pub Timer);
 
 fn spawn_dust(
     commands: &mut Commands,

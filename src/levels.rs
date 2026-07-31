@@ -1,6 +1,11 @@
 use crate::{
-    assets::GameAssets, colors::GameColors, lights::LevelAmbientColor, materials::FlashMaterial,
-    physics::FlightConfig, states::IsPaused,
+    assets::GameAssets,
+    colors::GameColors,
+    lights::LevelAmbientColor,
+    materials::{FlashMaterial, LightMaterial, WaterMaterial},
+    physics::FlightConfig,
+    states::IsPaused,
+    water::spawn_water,
 };
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
@@ -358,7 +363,8 @@ fn convert_editor_entities(
     grid: Option<Res<TileGrid>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<FlashMaterial>>,
-    mut color_mat: ResMut<Assets<ColorMaterial>>,
+    mut color_mats: ResMut<Assets<LightMaterial>>,
+    mut water_mats: ResMut<Assets<WaterMaterial>>,
 ) {
     let Some(grid) = grid else {
         return;
@@ -391,7 +397,7 @@ fn convert_editor_entities(
                 crate::passengers::spawn_cave(&mut commands, &assets, pos);
             }
             "Torch" => {
-                crate::lights::spawn_torch(&mut commands, &mut meshes, &mut color_mat, &grid, pos);
+                crate::lights::spawn_torch(&mut commands, &mut meshes, &mut color_mats, &grid, pos);
             }
             _ => {}
         }
@@ -474,6 +480,20 @@ fn convert_editor_entities(
                 } else {
                     crate::hazards::spawn_pterodactyl(&mut commands, &asset_server, pos, route);
                 }
+            }
+            "Water" => {
+                let w = inst.width as f32;
+                let h = inst.height as f32;
+                spawn_water(
+                    &mut commands,
+                    &mut meshes,
+                    &mut water_mats,
+                    &assets,
+                    pos.x - w * 0.5, // left edge
+                    w,
+                    pos.y + h * 0.5, // top edge = resting surface
+                    h,
+                );
             }
             other => warn!("LDtk entity with no converter: {other} "),
         }
