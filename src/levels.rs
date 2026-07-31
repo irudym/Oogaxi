@@ -1,4 +1,7 @@
-use crate::{assets::GameAssets, materials::FlashMaterial, physics::FlightConfig};
+use crate::{
+    assets::GameAssets, colors::GameColors, lights::LevelAmbientColor, materials::FlashMaterial,
+    physics::FlightConfig, states::IsPaused,
+};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
@@ -28,6 +31,18 @@ pub struct TileGrid {
     cols: i32,
     solid: Vec<bool>,
     origin: Vec2,
+}
+
+#[derive(Resource)]
+pub struct DayTime(Timer);
+
+#[derive(Resource, Default)]
+pub struct AnimateAmbient(bool);
+
+impl Default for DayTime {
+    fn default() -> Self {
+        Self(Timer::from_seconds(120.0, TimerMode::Repeating))
+    }
 }
 
 impl TileGrid {
@@ -182,6 +197,8 @@ impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(LdtkPlugin)
             .insert_resource(LevelSelection::index(0))
+            .insert_resource(DayTime::default())
+            .insert_resource(AnimateAmbient::default())
             .register_ldtk_int_cell::<WallBundle>(1) //1  - wall type in LDtk
             .add_systems(OnEnter(AppState::InGame), spawn_world)
             .add_systems(
@@ -191,9 +208,66 @@ impl Plugin for LevelPlugin {
                     .after(TransformSystems::Propagate)
                     .run_if(resource_exists::<GameAssets>),
             )
-            .add_systems(Update, (rebuild_tile_grid, dev_level_keys))
+            .add_systems(
+                Update,
+                (
+                    rebuild_tile_grid,
+                    dev_level_keys,
+                    tick_daytime_clock.run_if(in_state(IsPaused::Running)),
+                    update_level_ambient
+                        .run_if(resource_changed::<DayTime>)
+                        .run_if(|a: Res<AnimateAmbient>| a.0),
+                ),
+            )
             .add_systems(OnExit(AppState::InGame), remove_tile_grid);
     }
+}
+
+fn tick_daytime_clock(time: Res<Time>, mut clock: ResMut<DayTime>) {
+    clock.0.tick(time.delta());
+}
+
+fn color_lerp(color_1: Color, color_2: Color, fact: f32) -> Color {
+    let c1 = color_1.to_linear();
+    let c2 = color_2.to_linear();
+
+    Color::LinearRgba(LinearRgba {
+        red: c1.red.lerp(c2.red, fact),
+        green: c1.green.lerp(c2.green, fact),
+        blue: c1.blue.lerp(c2.blue, fact),
+        alpha: c1.alpha.lerp(c2.alpha, fact),
+    })
+}
+
+fn update_level_ambient(mut ambient: ResMut<LevelAmbientColor>, clock: Res<DayTime>) {
+    // TODO: need to make a distinguish day - time periods and make MORNING and EVENING time frames smaller
+    let fract = clock.0.fraction();
+    let color = if fract < 0.25 {
+        color_lerp(
+            GameColors::NIGHT_AMBIENT,
+            GameColors::MORNING_AMBIENT,
+            fract / 0.25,
+        )
+    } else if fract >= 0.25 && fract < 0.5 {
+        color_lerp(
+            GameColors::MORNING_AMBIENT,
+            GameColors::DAY_AMBIENT,
+            (fract - 0.25) / 0.25,
+        )
+    } else if fract >= 0.5 && fract < 0.75 {
+        color_lerp(
+            GameColors::DAY_AMBIENT,
+            GameColors::EVENING_AMBIENT,
+            (fract - 0.5) / 0.25,
+        )
+    } else {
+        color_lerp(
+            GameColors::EVENING_AMBIENT,
+            GameColors::NIGHT_AMBIENT,
+            (fract - 0.75) / 0.25,
+        )
+    };
+    ambient.0 = color;
 }
 
 /// OnExit(AppState::InGame): the level is gone, so the grid built from it
@@ -232,6 +306,15 @@ fn rebuild_tile_grid(
         let level = project
             .get_raw_level_by_iid(level_id.get())
             .expect("spawned level exists in project");
+
+        let ambient = level
+            .get_color_field("Ambient")
+            .copied()
+            .unwrap_or(LevelAmbientColor::default().0);
+        commands.insert_resource(LevelAmbientColor(ambient));
+
+        let animate_ambient = level.get_bool_field("DayNight").copied().unwrap_or(false);
+        commands.insert_resource(AnimateAmbient(animate_ambient));
 
         let cols = level.px_wid / TILE as i32;
         let rows = level.px_hei / TILE as i32;

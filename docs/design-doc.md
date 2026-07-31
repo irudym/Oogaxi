@@ -107,3 +107,6 @@ THe lighting system consists of three pieces:
 
 #### Honking
 The honk’s third job. Honking scares creatures: Honked within radius → interrupt to Recovering (flee-flavored). Designer’s call whether this ships — it makes the honk defensive, which changes its economy — but wire it behind a dial and playtest before voting.
+
+#### Night fares
+Night fares paying more is what turns a lighting feature into a gameplay one — suddenly the dark is both a hazard and an opportunity, and the player has a reason to fly during the scary part of the cycle. That's a one-line change in fare_between (multiply by a factor derived from DayTime.0.fraction()) plus a HUD hint so the player can see the premium.

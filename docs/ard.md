@@ -22,3 +22,5 @@
       let vignette = 1.0 - smoothstep(0.35, 0.85, distance(mesh.uv, vec2(0.5))) * params.x;
       // combine both darkenings into one output
   ```
+* ADR-0016: need to add night fares, update fare_between (multiply factor derived from DayTime.0.fraction())
+* ADR-0017: currently the morning->day->evening->night has the same time length, it's worth to make day and nigh bigger.

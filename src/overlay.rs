@@ -40,6 +40,7 @@ pub fn spawn_post_process(
 
     let quad = meshes.add(Rectangle::new(640.0, 360.0));
 
+    // lights overlay
     commands.spawn((
         Mesh2d(quad.clone()),
         MeshMaterial2d(light_materials.add(LightCompositeMaterial {
@@ -49,6 +50,7 @@ pub fn spawn_post_process(
         RenderLayers::layer(OVERLAY_LAYER),
     ));
 
+    // effects
     commands.spawn((
         Mesh2d(quad.clone()),
         MeshMaterial2d(screen_materials.add(ScreenMaterial {

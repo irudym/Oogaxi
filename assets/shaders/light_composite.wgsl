@@ -6,8 +6,6 @@
 @fragment
 fn fragment(mesh: VertexOutput) -> @location(0) vec4<f32> {
     let light = textureSample(light_map, light_sampler, mesh.uv).rgb;
-    // darken in inverse: alpha carries "how much shadow to apply"
-    // color carries the light's tint
-    let luminance = dot(light, vec3<f32>(0.7, 0.7, 0.7)); // (0.299, 0.587, 0.114)
-    return vec4<f32>(light * 0.5, 1.0 - clamp(luminance, 0.0, 1.0));
+
+    return vec4<f32>(light, 1.0);
 }

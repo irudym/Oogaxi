@@ -24,6 +24,15 @@ pub struct LightMap(pub Handle<Image>);
 #[derive(Component)]
 struct LightCamera;
 
+#[derive(Resource)]
+pub struct LevelAmbientColor(pub Color);
+
+impl Default for LevelAmbientColor {
+    fn default() -> Self {
+        Self(Color::srgb(0.60, 0.44, 0.56)) // cave default
+    }
+}
+
 fn emissive(color: Color, strength: f32) -> Color {
     let c = color.to_linear();
     Color::LinearRgba(LinearRgba {
@@ -50,7 +59,7 @@ fn setup_light_map(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
         LightCamera,
         Camera {
             order: -1, // before the game camera, the map should exist first
-            clear_color: ClearColorConfig::Custom(Color::srgb(0.40, 0.40, 0.40)),
+            clear_color: ClearColorConfig::Custom(Color::srgb(0.75, 0.66, 0.90)),
             ..default()
         },
         RenderTarget::Image(handle.clone().into()),
@@ -77,17 +86,30 @@ fn sync_light_camera(
     *light_tf = *game_tf;
 }
 
+fn apply_ambient(
+    ambient: Res<LevelAmbientColor>,
+    mut light_cam: Query<&mut Camera, With<LightCamera>>,
+) {
+    let Ok(mut camera) = light_cam.single_mut() else {
+        return;
+    };
+    camera.clear_color = ClearColorConfig::Custom(ambient.0);
+}
+
 pub struct LightPlugin;
 
 impl Plugin for LightPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_light_map).add_systems(
-            Update,
-            (
-                sync_light_camera.after(camera_follow),
-                flicker_lights.run_if(in_state(IsPaused::Running)),
-            ),
-        );
+        app.insert_resource(LevelAmbientColor::default())
+            .add_systems(Startup, setup_light_map)
+            .add_systems(
+                Update,
+                (
+                    sync_light_camera.after(camera_follow),
+                    flicker_lights.run_if(in_state(IsPaused::Running)),
+                    apply_ambient.run_if(resource_changed::<LevelAmbientColor>),
+                ),
+            );
     }
 }
 
