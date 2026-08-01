@@ -6,6 +6,7 @@ pub mod GameColors {
     pub const TORCH_CORE: Color = Color::srgb(1.0, 0.64, 0.23);
     pub const TORCH_FLAME: Color = Color::srgb(1.0, 0.82, 0.29);
     pub const WATER: Color = Color::srgb(0.31, 0.7, 0.75);
+    pub const WATER_DROPS: Color = Color::srgb(0.87, 0.96, 0.94);
 
     pub const NIGHT_AMBIENT: Color = Color::srgb(0.1, 0.09, 0.1);
     pub const MORNING_AMBIENT: Color = Color::srgb(0.4, 0.8, 0.9);

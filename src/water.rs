@@ -219,7 +219,10 @@ fn splash_on_entry(
             if !crossed {
                 continue;
             }
-            let force = (vel.0.y.abs() / 10.0).clamp(0.1, 10.0);
+            let force = (vel.0.y.abs() / 10.0).clamp(0.1, 15.0);
+
+            warn!("Splash: force: {}, vel_y: {}", force, vel.0.y.abs());
+
             water.splash(pos.0.x, -force);
             spawn_drops(
                 &mut commands,
@@ -233,7 +236,7 @@ fn splash_on_entry(
 
 fn spawn_drops(commands: &mut Commands, rng: &mut GameRng, at: Vec2, intensity: f32) {
     let pos = Vec3::new(at.x, at.y, z::FX);
-    let count = (8.0 + intensity * 40.0) as usize;
+    let count = (8.0 + intensity * 2.0) as usize;
     for _ in 0..count {
         let side = if rng.0.random_bool(0.5) { 1.0 } else { -1.0 };
         let angle_from_horizontal: f32 = rng.0.random_range(0.1..0.8); // 6 - 46 grad
@@ -241,13 +244,14 @@ fn spawn_drops(commands: &mut Commands, rng: &mut GameRng, at: Vec2, intensity: 
             side * angle_from_horizontal.cos(),
             angle_from_horizontal.sin(),
         );
-        let speed = rng.0.random_range(60.0..140.0) * (0.4 + intensity * 0.6);
+        let speed = rng.0.random_range(60.0..140.0) * (0.4 + intensity / 20.0);
+
         let vel = dir * speed;
 
         commands.spawn((
             Particle,
             Fade(rng.0.random_range(0.5..1.0)),
-            Sprite::from_color(GameColors::WATER, Vec2::splat(2.0)),
+            Sprite::from_color(GameColors::WATER_DROPS, Vec2::splat(1.0)),
             Transform::from_translation(pos),
             Velocity(vel),
             LifeTime(Timer::from_seconds(
