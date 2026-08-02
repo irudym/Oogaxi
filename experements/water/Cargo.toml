@@ -1,0 +1,16 @@
+[package]
+name = "water"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+oogaxi = { path = "../.."}
+bevy.workspace = true
+
+# light optimization, fast recompiles
+[profile.dev]
+opt-level = 1
+
+# dependencies: full optimisation, compile once
+[profile.dev.package."*"]
+opt-level = 3

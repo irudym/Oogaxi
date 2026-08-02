@@ -1,59 +1,36 @@
-mod animations;
-mod assets;
-mod bubble;
-mod camera;
-mod collision;
-mod colors;
-mod effects;
-mod game_rand;
-mod hazards;
-mod input;
-mod integrity;
-mod layers;
-mod levels;
-mod lights;
-mod main_menu;
-mod materials;
-mod messages;
-mod overlay;
-mod particles;
-mod passengers;
-mod physics;
-mod player;
-mod score;
-mod spritesheet;
-mod states;
-mod steering;
-mod water;
-mod z;
-// mod zoo;
-
+/*
+ * Oogaxi: Ugh! game remake 2026(C) Igor Rudym
+ */
 use bevy::sprite_render::Material2dPlugin;
 use bevy::{prelude::*, window::PresentMode};
 
+use oogaxi::states::StatesPlugin;
 use rand::SeedableRng;
 use rand::rngs::StdRng;
-use states::StatesPlugin;
 
-use crate::animations::AnimationPlugin;
-use crate::assets::AssetsPlugin;
-use crate::camera::CameraPlugin;
-use crate::game_rand::GameRng;
-use crate::hazards::HazardPlugin;
-use crate::levels::TILE;
-use crate::lights::LightPlugin;
-use crate::materials::{
+use oogaxi::animations::AnimationPlugin;
+use oogaxi::assets::AssetsPlugin;
+use oogaxi::camera::CameraPlugin;
+use oogaxi::game_rand::GameRng;
+use oogaxi::hazards::HazardPlugin;
+use oogaxi::levels::TILE;
+use oogaxi::lights::LightPlugin;
+use oogaxi::materials::{
     FlashMaterial, LightCompositeMaterial, LightMaterial, ScreenMaterial, WaterMaterial,
 };
 #[cfg(feature = "dev")]
-use crate::overlay::OverlayCamera;
-use crate::particles::ParticlesPlugin;
-use crate::passengers::PassengerPlugin;
-use crate::physics::FlightConfig;
-use crate::water::WaterPlugin;
-use crate::{
-    bubble::BubblePlugin, collision::CollisionPlugin, input::InputPlugin,
-    integrity::IntegrityPlugin, levels::LevelPlugin, physics::PhysicsPlugin, score::ScorePlugin,
+use oogaxi::overlay::OverlayCamera;
+use oogaxi::particles::ParticlesPlugin;
+use oogaxi::passengers::PassengerPlugin;
+use oogaxi::water::WaterPlugin;
+use oogaxi::{
+    bubble::BubblePlugin,
+    collision::CollisionPlugin,
+    input::InputPlugin,
+    integrity::IntegrityPlugin,
+    levels::LevelPlugin,
+    physics::{FlightConfig, PhysicsPlugin},
+    score::ScorePlugin,
 };
 
 fn main() {
@@ -109,14 +86,14 @@ fn main() {
         use bevy_inspector_egui::bevy_egui::{EguiGlobalSettings, EguiPlugin};
         use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
-        use crate::overlay::spawn_post_process;
+        use oogaxi::overlay::spawn_post_process;
 
         app.insert_resource(EguiGlobalSettings {
             auto_create_primary_context: false,
             ..default()
         })
         .add_plugins(EguiPlugin::default())
-        .add_plugins(ResourceInspectorPlugin::<physics::FlightConfig>::default())
+        .add_plugins(ResourceInspectorPlugin::<FlightConfig>::default())
         .add_systems(Startup, attach_egui_to_overlay.after(spawn_post_process));
     }
 
