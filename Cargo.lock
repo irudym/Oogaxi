@@ -5909,6 +5909,7 @@ name = "water"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-inspector-egui",
  "oogaxi",
 ]
 

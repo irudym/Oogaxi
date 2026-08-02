@@ -1,5 +1,7 @@
 use bevy::sprite_render::Material2dPlugin;
 use bevy::{prelude::*, window::PresentMode};
+use bevy_inspector_egui::bevy_egui::{EguiGlobalSettings, EguiPlugin};
+use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use oogaxi::camera::CameraPlugin;
 use oogaxi::materials::*;
 
@@ -22,6 +24,7 @@ fn main() {
     );
     app.add_plugins((
         CameraPlugin,
+        PhysicsPlugin,
         (
             Material2dPlugin::<FlashMaterial>::default(),
             Material2dPlugin::<ScreenMaterial>::default(),
@@ -30,6 +33,13 @@ fn main() {
             Material2dPlugin::<WaterMaterial>::default(),
         ), //add shaders
     ));
+
+    app.insert_resource(EguiGlobalSettings {
+        auto_create_primary_context: false,
+        ..default()
+    })
+    .add_plugins(EguiPlugin::default());
+    //.add_plugins(ResourceInspectorPlugin::<FlightConfig>::default());
 
     app.run();
 }

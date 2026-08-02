@@ -1,4 +1,5 @@
 use crate::layers::WORLD_LAYER;
+use crate::lights::LightMap;
 use crate::states::IsPaused;
 use bevy::camera::{Hdr, ScalingMode, visibility::RenderLayers};
 use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
@@ -46,7 +47,14 @@ impl Plugin for CameraPlugin {
             .init_resource::<CameraConfig>()
             .init_resource::<LevelBounds>()
             .init_resource::<Trauma>()
-            .add_systems(Startup, (spawn_camera, spawn_post_process).chain())
+            .add_systems(
+                Startup,
+                (
+                    spawn_camera,
+                    spawn_post_process.run_if(resource_exists::<LightMap>),
+                )
+                    .chain(),
+            )
             .add_systems(Update, (camera_follow, parallax.after(camera_follow)))
             .add_systems(
                 Update,
