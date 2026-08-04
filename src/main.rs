@@ -4,7 +4,8 @@
 use bevy::sprite_render::Material2dPlugin;
 use bevy::{prelude::*, window::PresentMode};
 
-use oogaxi::messages::{CopterCrashed, Landed, PassengerDelivered};
+use oogaxi::effects::EffectsPlugin;
+use oogaxi::messages::{CopterCrashed, CopterDamaged, Landed, PassengerDelivered};
 use oogaxi::states::{AppState, StatesPlugin};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
@@ -71,6 +72,7 @@ fn main() {
             PassengerPlugin,
             HazardPlugin,
             BubblePlugin,
+            EffectsPlugin,
         ),
         (WaterPlugin, ParticlesPlugin, LightPlugin),
         (
