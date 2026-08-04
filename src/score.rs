@@ -18,9 +18,7 @@ pub struct ScorePlugin;
 
 impl Plugin for ScorePlugin {
     fn build(&self, app: &mut App) {
-        app.add_message::<CopterCrashed>()
-            .add_message::<PassengerDelivered>()
-            .init_resource::<Score>()
+        app.init_resource::<Score>()
             .add_systems(OnEnter(AppState::InGame), (reset_score, spawn_hud))
             .add_systems(
                 Update,

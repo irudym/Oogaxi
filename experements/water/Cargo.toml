@@ -6,7 +6,8 @@ edition = "2024"
 [dependencies]
 oogaxi = { path = "../.."}
 bevy.workspace = true
-bevy-inspector-egui = { version = "0.37", optional = true }
+bevy-inspector-egui = { version = "0.37"}
+rand.workspace = true
 
 # light optimization, fast recompiles
 [profile.dev]

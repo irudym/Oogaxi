@@ -4,7 +4,8 @@
 use bevy::sprite_render::Material2dPlugin;
 use bevy::{prelude::*, window::PresentMode};
 
-use oogaxi::states::StatesPlugin;
+use oogaxi::messages::{CopterCrashed, Landed, PassengerDelivered};
+use oogaxi::states::{AppState, StatesPlugin};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 
@@ -13,7 +14,7 @@ use oogaxi::assets::AssetsPlugin;
 use oogaxi::camera::CameraPlugin;
 use oogaxi::game_rand::GameRng;
 use oogaxi::hazards::HazardPlugin;
-use oogaxi::levels::TILE;
+use oogaxi::levels::{TILE, spawn_world};
 use oogaxi::lights::LightPlugin;
 use oogaxi::materials::{
     FlashMaterial, LightCompositeMaterial, LightMaterial, ScreenMaterial, WaterMaterial,
@@ -79,7 +80,9 @@ fn main() {
             Material2dPlugin::<LightMaterial>::default(),
             Material2dPlugin::<WaterMaterial>::default(),
         ), //add shaders
-    ));
+    ))
+    .add_systems(OnEnter(AppState::InGame), spawn_game);
+    init_messages(&mut app);
 
     #[cfg(feature = "dev")]
     {
@@ -107,4 +110,19 @@ fn attach_egui_to_overlay(mut commands: Commands, overlay: Query<Entity, With<Ov
             .entity(camera)
             .insert(bevy_inspector_egui::bevy_egui::PrimaryEguiContext);
     }
+}
+
+fn spawn_game(mut commands: Commands, asset_server: Res<AssetServer>) {
+    spawn_world(
+        &mut commands,
+        &asset_server,
+        "levels/oogaxi.ldtk".to_string(),
+    );
+}
+
+fn init_messages(app: &mut App) {
+    app.add_message::<CopterCrashed>()
+        .add_message::<PassengerDelivered>()
+        .add_message::<Landed>()
+        .add_message::<CopterDamaged>();
 }

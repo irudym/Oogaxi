@@ -18,8 +18,7 @@ pub struct IntegrityPlugin;
 
 impl Plugin for IntegrityPlugin {
     fn build(&self, app: &mut App) {
-        app.add_message::<CopterDamaged>()
-            .add_systems(OnEnter(AppState::InGame), reset_integrity)
+        app.add_systems(OnEnter(AppState::InGame), reset_integrity)
             .add_systems(
                 FixedUpdate,
                 (tick_invulnerability, apply_damage)

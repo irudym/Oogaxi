@@ -27,7 +27,7 @@ pub struct CollisionPlugin;
 
 impl Plugin for CollisionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_message::<Landed>().add_systems(
+        app.add_systems(
             FixedUpdate,
             (
                 (move_hazards, move_and_collide).in_set(SimSet::Move),

@@ -205,7 +205,7 @@ impl Plugin for LevelPlugin {
             .insert_resource(DayTime::default())
             .insert_resource(AnimateAmbient::default())
             .register_ldtk_int_cell::<WallBundle>(1) //1  - wall type in LDtk
-            .add_systems(OnEnter(AppState::InGame), spawn_world)
+            //.add_systems(OnEnter(AppState::InGame), spawn_world)
             .add_systems(
                 PostUpdate,
                 (despawn_level_owned, convert_editor_entities)
@@ -281,10 +281,15 @@ fn remove_tile_grid(mut commands: Commands) {
     commands.remove_resource::<TileGrid>();
 }
 
-fn spawn_world(mut commands: Commands, asset_server: Res<AssetServer>) {
+//called from main.rs: spawn_game function
+pub fn spawn_world(
+    mut commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    level_file: String,
+) {
     commands.spawn((
         LdtkWorldBundle {
-            ldtk_handle: asset_server.load("levels/oogaxi.ldtk").into(),
+            ldtk_handle: asset_server.load(level_file).into(),
             ..Default::default()
         },
         DespawnOnExit(AppState::InGame),
