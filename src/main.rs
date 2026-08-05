@@ -6,6 +6,7 @@ use bevy::{prelude::*, window::PresentMode};
 
 use oogaxi::effects::EffectsPlugin;
 use oogaxi::messages::{CopterCrashed, CopterDamaged, Landed, PassengerDelivered};
+use oogaxi::overlay::OverlayPlugin;
 use oogaxi::states::{AppState, StatesPlugin};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
@@ -15,7 +16,7 @@ use oogaxi::assets::AssetsPlugin;
 use oogaxi::camera::CameraPlugin;
 use oogaxi::game_rand::GameRng;
 use oogaxi::hazards::HazardPlugin;
-use oogaxi::levels::{TILE, spawn_world};
+use oogaxi::levels::{TILE, levels::spawn_world};
 use oogaxi::lights::LightPlugin;
 use oogaxi::materials::{
     FlashMaterial, LightCompositeMaterial, LightMaterial, ScreenMaterial, WaterMaterial,
@@ -58,8 +59,8 @@ fn main() {
     )
     .insert_resource(GameRng(StdRng::seed_from_u64(0xB00)))
     .add_plugins((
+        (CameraPlugin, OverlayPlugin, EffectsPlugin),
         (
-            CameraPlugin,
             StatesPlugin,
             ScorePlugin,
             PhysicsPlugin,
@@ -72,7 +73,6 @@ fn main() {
             PassengerPlugin,
             HazardPlugin,
             BubblePlugin,
-            EffectsPlugin,
         ),
         (WaterPlugin, ParticlesPlugin, LightPlugin),
         (
@@ -81,7 +81,7 @@ fn main() {
             Material2dPlugin::<LightCompositeMaterial>::default(),
             Material2dPlugin::<LightMaterial>::default(),
             Material2dPlugin::<WaterMaterial>::default(),
-        ), //add shaders
+        ),
     ))
     .add_systems(OnEnter(AppState::InGame), spawn_game);
     init_messages(&mut app);

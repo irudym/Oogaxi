@@ -174,7 +174,7 @@ fn draw_raycasts(
 
 fn draw_attack_radius(
     mut gizmos: Gizmos,
-    mut fliers: Query<(&PhysicalTranslation, &PteroBrain), With<Patrolling>>,
+    fliers: Query<(&PhysicalTranslation, &PteroBrain), With<Patrolling>>,
 ) {
     for (pos, brain) in fliers {
         gizmos.circle_2d(

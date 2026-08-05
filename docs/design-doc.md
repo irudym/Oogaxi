@@ -102,6 +102,9 @@ THe lighting system consists of three pieces:
 - A camera, that renders only lights
 - A material, that multiplies it over the scene  
 
+### Camera systems
+The start of the coordinate system is in the left lower corner, position: (0,0), the top right corner position is (640, 360) - the game resolution.
+
 
 ### Proposals
 

@@ -82,7 +82,7 @@ pub fn setup_main_menu(mut commands: Commands) {
 }
 
 pub fn menu_mouse_system(
-    mut buttons: Query<(&Interaction, &MenuIndex, &MenuAction), Changed<Interaction>>,
+    buttons: Query<(&Interaction, &MenuIndex, &MenuAction), Changed<Interaction>>,
     mut selected: ResMut<SelectedItem>,
     mut next: ResMut<NextState<AppState>>,
     mut exit: MessageWriter<AppExit>, //ui: Res<AudioChannel<UiBus>>,

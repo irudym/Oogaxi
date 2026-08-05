@@ -3,6 +3,7 @@ use crate::physics::Velocity;
 use crate::player::Player;
 use bevy::camera::{Hdr, ScalingMode, visibility::RenderLayers};
 use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
+use bevy::math::VectorSpace;
 use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
 
@@ -64,9 +65,16 @@ pub fn camera_follow(
 ) {
     // Query, not Single as the player does not exist during level lead
     // and the dev inspector can add cameras.
-    let Ok((player_tf, vel)) = player.single() else {
-        return;
+    // bypass in case of there is no player -> just focus on the center
+    let (player_tf, vel) = match player.single() {
+        Ok((tf, v)) => (tf.translation.truncate(), v.0),
+        _ => {
+            #[cfg(feature = "dev")]
+            warn_once!("camera_follow: no player — centering on level");
+            (Vec2::ZERO, Vec2::ZERO)
+        }
     };
+
     let Ok((mut cam_tf, projection)) = camera.single_mut() else {
         return;
     };
@@ -77,7 +85,7 @@ pub fn camera_follow(
     let half_view = orth.area.half_size();
 
     // 1. where we want to look_ ahead of the player along their motion.
-    let target = player_tf.translation.truncate() + vel.0 * config.lead_time;
+    let target = player_tf + vel * config.lead_time;
 
     // 2. clamp so the View never leaves the level
     let target = clamp_view(target, half_view, &bounds);

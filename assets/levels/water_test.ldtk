@@ -1515,7 +1515,7 @@
 					"entityInstances": [
 						{
 							"__identifier": "PlayerSpawn",
-							"__grid": [19,10],
+							"__grid": [19,1],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -1524,10 +1524,10 @@
 							"width": 42,
 							"height": 42,
 							"defUid": 106,
-							"px": [304,160],
+							"px": [304,16],
 							"fieldInstances": [],
 							"__worldX": 304,
-							"__worldY": 160
+							"__worldY": 16
 						},
 						{
 							"__identifier": "Water",

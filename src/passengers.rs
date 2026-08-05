@@ -414,7 +414,7 @@ pub fn spawn_sign(commands: &mut Commands, assets: &GameAssets, pos: Vec2, addre
     ));
 }
 
-pub fn spawn_cave(commands: &mut Commands, assets: &GameAssets, pos: Vec2) {
+pub fn spawn_cave(commands: &mut Commands, _assets: &GameAssets, pos: Vec2) {
     commands.spawn((
         Transform::from_translation(pos.extend(z::PASSENGER - 1.0)),
         LevelOwned,

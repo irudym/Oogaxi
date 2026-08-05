@@ -2,15 +2,19 @@ use bevy::sprite_render::Material2dPlugin;
 use bevy::{prelude::*, window::PresentMode};
 use bevy_inspector_egui::bevy_egui::{EguiGlobalSettings, EguiPlugin};
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+use oogaxi::animations::AnimationPlugin;
+use oogaxi::assets::AssetsPlugin;
 use oogaxi::camera::CameraPlugin;
 use oogaxi::collision::CollisionPlugin;
 use oogaxi::game_rand::GameRng;
-use oogaxi::levels::{LevelPlugin, spawn_world};
+use oogaxi::levels::{LevelPlugin, levels::spawn_world};
 use oogaxi::lights::LightPlugin;
 use oogaxi::materials::*;
+use oogaxi::overlay::OverlayPlugin;
 use oogaxi::particles::ParticlesPlugin;
-use oogaxi::physics::PhysicsPlugin;
-use oogaxi::states::{AppState, IsPaused};
+use oogaxi::physics::{PhysicalTranslation, PhysicsPlugin, PreviousPhysicalTranslation};
+use oogaxi::player::Player;
+use oogaxi::states::{AppState, IsPaused, StatesPlugin};
 use oogaxi::water::WaterPlugin;
 use rand::SeedableRng;
 use rand::rngs::StdRng;
@@ -39,16 +43,19 @@ fn main() {
             }),
     );
     app.insert_resource(GameRng(StdRng::seed_from_u64(0xB00)))
-        .init_state::<AppState>()
-        .add_sub_state::<IsPaused>()
         .add_plugins((
-            CameraPlugin,
-            PhysicsPlugin,
-            LevelPlugin,
-            CollisionPlugin,
-            WaterPlugin,
-            ParticlesPlugin,
-            LightPlugin,
+            (CameraPlugin, OverlayPlugin),
+            (
+                PhysicsPlugin,
+                LevelPlugin,
+                CollisionPlugin,
+                WaterPlugin,
+                ParticlesPlugin,
+                LightPlugin,
+                AnimationPlugin,
+                AssetsPlugin,
+                StatesPlugin, //to load assets, as it happens in AppState::Loading
+            ),
             (
                 Material2dPlugin::<FlashMaterial>::default(),
                 Material2dPlugin::<ScreenMaterial>::default(),
@@ -57,7 +64,8 @@ fn main() {
                 Material2dPlugin::<WaterMaterial>::default(),
             ), //add shaders
         ))
-        .add_systems(Startup, spawn_experiment_screen);
+        .add_systems(Startup, spawn_experiment_screen)
+        .add_systems(FixedUpdate, reset_copter_position);
 
     app.insert_resource(EguiGlobalSettings {
         auto_create_primary_context: false,
@@ -75,16 +83,14 @@ fn main() {
 fn spawn_experiment_screen(
     mut commands: Commands,
     mut next: ResMut<NextState<AppState>>,
-    mut next_pause: ResMut<NextState<IsPaused>>,
     asset_server: Res<AssetServer>,
 ) {
-    next.set(AppState::InGame);
-    next_pause.set(IsPaused::Running);
     spawn_world(
         &mut commands,
         &asset_server,
         "levels/water_test.ldtk".to_string(),
     );
+    next.set(AppState::Loading);
 }
 
 fn init_messages(app: &mut App) {
@@ -92,4 +98,16 @@ fn init_messages(app: &mut App) {
         .add_message::<PassengerDelivered>()
         .add_message::<Landed>()
         .add_message::<CopterDamaged>();
+}
+
+///if the copter is under water, start again
+fn reset_copter_position(
+    mut players: Query<(&mut PhysicalTranslation, &mut PreviousPhysicalTranslation), With<Player>>,
+) {
+    for (mut pos, mut prev) in &mut players {
+        if pos.0.y < 24.0 {
+            pos.0.y = 330.0;
+            prev.0.y = 330.0;
+        }
+    }
 }

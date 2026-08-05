@@ -4,7 +4,7 @@ use bevy::{
     camera::{RenderTarget, ScalingMode, visibility::RenderLayers},
     prelude::*,
 };
-use bevy_render::render_resource::{Texture, TextureFormat::Rgba8UnormSrgb};
+use bevy_render::render_resource::TextureFormat::Rgba8UnormSrgb;
 use rand::RngExt;
 
 use crate::materials::LightMaterial;

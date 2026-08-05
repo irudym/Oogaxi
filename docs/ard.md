@@ -24,3 +24,4 @@
   ```
 * ADR-0016: need to add night fares, update fare_between (multiply factor derived from DayTime.0.fraction())
 * ADR-0017: currently the morning->day->evening->night has the same time length, it's worth to make day and nigh bigger.
+* ADR-0018: in CameraPlugin, camera_follow - in case no player, center the camera at (0,0) position (level center).
