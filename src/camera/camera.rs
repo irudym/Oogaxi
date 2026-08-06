@@ -1,11 +1,14 @@
-use crate::layers::WORLD_LAYER;
+use crate::camera::SceneTexture;
+//use crate::layers::WORLD_LAYER;
 use crate::physics::Velocity;
 use crate::player::Player;
-use bevy::camera::{Hdr, ScalingMode, visibility::RenderLayers};
+use bevy::camera::RenderTarget;
+use bevy::camera::{Hdr, ScalingMode};
 use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
-use bevy::math::VectorSpace;
+
 use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
+use bevy::render::render_resource::TextureFormat;
 
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
@@ -36,24 +39,39 @@ pub struct LevelBounds {
 
 /// Virtual-resolution projection, kept - now with the ni-bit pipeline
 /// (HDR + tonemapping + dither)
-pub fn spawn_camera(mut commands: Commands) {
+pub fn spawn_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
+    let resolution = Vec2::new(640.0, 360.0); // best modes: 640x360, 1280x720
+
+    // create scene texture to apply future shaders
+    let scene = images.add(Image::new_target_texture(
+        resolution.x as u32,
+        resolution.y as u32,
+        TextureFormat::Rgba8Unorm,
+        Some(TextureFormat::Rgba8UnormSrgb),
+    ));
+
     commands.spawn((
         GameCamera,
         Camera2d,
         Hdr,
-        Camera { ..default() },
+        Camera {
+            order: 0,
+            ..default()
+        },
         Tonemapping::TonyMcMapface,
         DebandDither::Enabled,
         Bloom::default(),
         Projection::Orthographic(OrthographicProjection {
             scaling_mode: ScalingMode::Fixed {
-                width: 640.0, // best modes: 640x360, 1280x720
-                height: 360.0,
+                width: resolution.x,
+                height: resolution.y,
             },
             ..OrthographicProjection::default_2d()
         }),
-        RenderLayers::layer(WORLD_LAYER),
+        RenderTarget::Image(scene.clone().into()),
     ));
+
+    commands.insert_resource(SceneTexture(scene));
 }
 
 pub fn camera_follow(

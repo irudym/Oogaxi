@@ -5,6 +5,7 @@ use bevy::sprite_render::Material2dPlugin;
 use bevy::{prelude::*, window::PresentMode};
 
 use oogaxi::effects::EffectsPlugin;
+use oogaxi::materials::scene_present_material::ScenePresentMaterial;
 use oogaxi::messages::{CopterCrashed, CopterDamaged, Landed, PassengerDelivered};
 use oogaxi::overlay::OverlayPlugin;
 use oogaxi::states::{AppState, StatesPlugin};
@@ -81,6 +82,7 @@ fn main() {
             Material2dPlugin::<LightCompositeMaterial>::default(),
             Material2dPlugin::<LightMaterial>::default(),
             Material2dPlugin::<WaterMaterial>::default(),
+            Material2dPlugin::<ScenePresentMaterial>::default(),
         ),
     ))
     .add_systems(OnEnter(AppState::InGame), spawn_game);

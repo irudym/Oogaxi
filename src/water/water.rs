@@ -6,12 +6,13 @@ use bevy::{
 
 use crate::{
     assets::{GameAssets, Sheet},
+    camera::SceneTexture,
     colors::GameColors,
     game_rand::GameRng,
     levels::LevelOwned,
     materials::WaterMaterial,
     particles::{Fade, LifeTime, Particle},
-    physics::{PhysicalTranslation, PreviousPhysicalTranslation, SimSet, Velocity},
+    physics::{PhysicalTranslation, PreviousPhysicalTranslation, Velocity},
     states::AppState,
     z::z,
 };
@@ -21,6 +22,12 @@ use rand::RngExt;
 const SPRING_K: f32 = 0.025; // stiffness - how hard a point returns to rest
 const DAMPING: f32 = 0.022; // energy loss - how fast ripples die
 const SPREAD: f32 = 0.18; // neighbour coupling - how fast waves travel
+
+#[derive(Component)]
+pub struct Water;
+
+#[derive(Component)]
+pub struct WaterHighlight;
 
 #[derive(Component)]
 pub struct WaterSurface {
@@ -102,18 +109,18 @@ pub fn simulate_water(mut surface: Query<&mut WaterSurface>) {
 }
 
 /// Two vertices per column: surface point and floor point. the strip of quads between them is the water body
-fn build_water_mesh(water: &WaterSurface) -> Mesh {
-    let n = water.heights.len();
+fn build_water_mesh(n: usize, width: f32, depth: f32) -> Mesh {
+    let heights = vec![0.0; n];
     let mut positions = Vec::with_capacity(n * 2);
     let mut uvs = Vec::with_capacity(n * 2);
     let mut colors = Vec::with_capacity(n * 2);
 
-    for (i, h) in water.heights.iter().enumerate() {
+    for (i, h) in heights.iter().enumerate() {
         let t = i as f32 / (n - 1) as f32;
-        let x = t * water.width;
+        let x = t * width;
 
         positions.push([x, *h, 0.0]);
-        positions.push([x, -water.depth, 0.0]);
+        positions.push([x, -depth, 0.0]);
         uvs.push([t, 0.0]);
         uvs.push([t, 1.0]);
 
@@ -142,9 +149,6 @@ pub fn update_water_mesh(
     surfaces: Query<(&WaterSurface, &Mesh2d)>,
 ) {
     for (water, handle) in &surfaces {
-        let Some(mut mesh) = meshes.get_mut(&handle.0) else {
-            continue;
-        };
         let n = water.heights.len();
         let mut positions = Vec::with_capacity(n * 2);
         for (i, h) in water.heights.iter().enumerate() {
@@ -152,7 +156,10 @@ pub fn update_water_mesh(
             positions.push([x, *h, 0.0]);
             positions.push([x, -water.depth, 0.0]);
         }
-        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+
+        if let Some(mut mesh) = meshes.get_mut(&handle.0) {
+            mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions.clone());
+        }
     }
 }
 
@@ -161,6 +168,7 @@ pub fn spawn_water(
     meshes: &mut Assets<Mesh>,
     materials: &mut Assets<WaterMaterial>,
     assets: &GameAssets,
+    scene: &SceneTexture,
     left: f32,
     width: f32,
     rest_y: f32,
@@ -170,21 +178,37 @@ pub fn spawn_water(
     const PX_PER_COLUMN: f32 = 6.0;
     let columns = ((width / PX_PER_COLUMN).round() as usize).clamp(8, 256);
 
+    let mesh = meshes.add(build_water_mesh(columns, width, depth));
     let water = WaterSurface::new(left, width, rest_y, depth, columns);
-    let mesh = build_water_mesh(&water);
 
     commands.spawn((
+        Water,
         water,
-        Mesh2d(meshes.add(mesh)),
+        Mesh2d(mesh),
         MeshMaterial2d(materials.add(WaterMaterial {
-            params: Vec4::new(0.0, 0.35, 0.0, 0.0),
+            params: Vec4::new(0.0, 0.6, 0.25, 0.4), // time, sparkle, desat, refract
+            params2: Vec4::new(0.09, 0.35, 0.0, 0.0), // foam, shimmer
             noise_texture: Some(assets.get(Sheet::Water).image.clone()),
+            scene: Some(scene.0.clone()),
         })),
         // Local (0,0) of the mesh sits at the left end of the resting surface.
-        Transform::from_xyz(left, rest_y, z::WATER),
+        Transform::from_xyz(left, rest_y, z::WATER), // above the presented layer, below the lights
         LevelOwned,
         DespawnOnExit(AppState::InGame),
     ));
+}
+
+pub fn animate_water_materials(
+    water: Query<&MeshMaterial2d<WaterMaterial>, With<Water>>,
+    mut water_materials: ResMut<Assets<WaterMaterial>>,
+    time: Res<Time>,
+) {
+    let t = time.elapsed_secs_wrapped();
+    for water_handle in &water {
+        if let Some(mut water_mat) = water_materials.get_mut(&water_handle.0) {
+            water_mat.params.x = t;
+        }
+    }
 }
 
 pub fn splash_on_entry(

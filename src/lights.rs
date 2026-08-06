@@ -1,10 +1,10 @@
 use bevy::asset::RenderAssetUsages;
 use bevy::mesh::{Indices, PrimitiveTopology};
+use bevy::render::render_resource::TextureFormat;
 use bevy::{
     camera::{RenderTarget, ScalingMode, visibility::RenderLayers},
     prelude::*,
 };
-use bevy_render::render_resource::TextureFormat::Rgba8UnormSrgb;
 use rand::RngExt;
 
 use crate::materials::LightMaterial;
@@ -48,8 +48,8 @@ fn setup_light_map(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
     let image = Image::new_target_texture(
         320,
         180,
-        bevy_render::render_resource::TextureFormat::Rgba8UnormSrgb,
-        Some(Rgba8UnormSrgb),
+        TextureFormat::Rgba8UnormSrgb,
+        Some(TextureFormat::Rgba8UnormSrgb),
     );
     let handle = images.add(image);
 

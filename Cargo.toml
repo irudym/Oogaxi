@@ -15,10 +15,21 @@ name = "oogaxi"
 path = "src/main.rs"
 
 [workspace.dependencies]
-bevy = { version = "0.19.0", features = ["dev"] }
+bevy = { version = "0.19.0", default-features = false, features = [
+    "2d",              # default_app, default_platform, 2d render, scene, picking
+    "ui",              # ui_api, ui render, bevy_ui_widgets
+    "bevy_text",       # Text/TextFont HUD and menus
+    "bevy_state",      # AppState / IsPaused
+    "bevy_gizmos",     # dev collider/route/LOS visualisation
+    "bevy_winit",      # windowing
+    # "x11",             # swap for "wayland" on Linux, drop on macOS/Windows
+    "multi_threaded",
+    "png",
+    "default_font",    # remove once you ship a real font
+    "tonemapping_luts"
+] }
 bevy_common_assets = { version = "0.17", features = ["json"] }
 bevy_ecs_ldtk = "0.15.0"
-bevy_render = "0.19.0"
 leafwing-input-manager = "0.21.0"
 rand = "0.10.2"
 serde = { version = "1.0.228", features = ["derive"] }
@@ -31,7 +42,6 @@ bevy-inspector-egui = { version = "0.37", optional = true }
 bevy.workspace = true
 bevy_common_assets.workspace = true
 bevy_ecs_ldtk.workspace = true
-bevy_render.workspace = true
 leafwing-input-manager.workspace = true
 rand.workspace = true
 serde.workspace = true
@@ -43,7 +53,12 @@ strum_macros.workspace = true
 
 # Dev only: 'cargo run --features dev' turns on dynamic linking
 [features]
-dev = ["bevy/dynamic_linking", "dep:bevy-inspector-egui"]
+dev = [
+    "bevy/dynamic_linking",
+    "bevy/file_watcher",     # shader hot-reload, dev only
+    "bevy/bevy_dev_tools",
+    "dep:bevy-inspector-egui",
+]
 # dev = ["dep:bevy-inspector-egui"]
 
 # light optimization, fast recompiles

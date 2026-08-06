@@ -1,7 +1,7 @@
 use crate::{
     physics::SimSet,
     states::AppState,
-    water::water::{simulate_water, splash_on_entry, update_water_mesh},
+    water::water::{animate_water_materials, simulate_water, splash_on_entry, update_water_mesh},
 };
 use bevy::prelude::*;
 
@@ -17,7 +17,7 @@ impl Plugin for WaterPlugin {
         )
         .add_systems(
             Update,
-            (update_water_mesh/* ,animate_water_material*/).run_if(in_state(AppState::InGame)),
+            (update_water_mesh, animate_water_materials).run_if(in_state(AppState::InGame)),
         );
     }
 }

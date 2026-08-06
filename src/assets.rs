@@ -163,6 +163,7 @@ fn build_when_ready(
 
     commands.insert_resource(game_assets);
     commands.remove_resource::<PendingSheets>();
+    warn!("All assets loaded, switching to the next state");
     next.set(AppState::InGame);
 }
 

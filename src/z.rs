@@ -7,6 +7,8 @@ pub mod z {
     pub const HAZARD: f32 = 6.0;
     pub const PLAYER: f32 = 10.0;
     pub const FX: f32 = 15.0;
-    pub const LIGHTS: f32 = 9.0;
-    pub const WATER: f32 = 20.0;
+    pub const EFFECTS: f32 = 1.0;
+    pub const LIGHTS: f32 = 0.0;
+    pub const WATER: f32 = -0.5;
+    pub const SCENE: f32 = -1.0;
 }

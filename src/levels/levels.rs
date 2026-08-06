@@ -1,3 +1,4 @@
+use crate::camera::SceneTexture;
 use crate::levels::TaxiRegistry;
 use crate::levels::taxi_registry::Stop;
 use crate::{
@@ -303,6 +304,7 @@ pub fn convert_editor_entities(
     mut materials: ResMut<Assets<FlashMaterial>>,
     mut color_mats: ResMut<Assets<LightMaterial>>,
     mut water_mats: ResMut<Assets<WaterMaterial>>,
+    scene: Res<SceneTexture>,
 ) {
     let Some(grid) = grid else {
         return;
@@ -427,6 +429,7 @@ pub fn convert_editor_entities(
                     &mut meshes,
                     &mut water_mats,
                     &assets,
+                    &scene,
                     pos.x - w * 0.5, // left edge
                     w,
                     pos.y + h * 0.5, // top edge = resting surface

@@ -155,7 +155,7 @@ fn draw_raycasts(
     mut gizmos: Gizmos,
     tile_grid: Option<Res<TileGrid>>,
     player: Query<&PhysicalTranslation, With<Player>>,
-    mut fliers: Query<&PhysicalTranslation, With<Patrolling>>,
+    fliers: Query<&PhysicalTranslation, With<Patrolling>>,
 ) {
     let Some(grid) = tile_grid else {
         return;

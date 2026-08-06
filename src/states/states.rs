@@ -1,4 +1,4 @@
-use crate::{assets::PendingSheets, input::Action, main_menu::*};
+use crate::{assets::PendingSheets, input::Action};
 use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 
