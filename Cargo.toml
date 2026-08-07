@@ -26,7 +26,8 @@ bevy = { version = "0.19.0", default-features = false, features = [
     "multi_threaded",
     "png",
     "default_font",    # remove once you ship a real font
-    "tonemapping_luts"
+    "tonemapping_luts",
+    "zstd_rust"
 ] }
 bevy_common_assets = { version = "0.17", features = ["json"] }
 bevy_ecs_ldtk = "0.15.0"
@@ -36,9 +37,10 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
 strum = "0.28.0"
 strum_macros = "0.28.0"
+bevy-inspector-egui = { version = "0.37"}
 
 [dependencies]
-bevy-inspector-egui = { version = "0.37", optional = true }
+bevy-inspector-egui = { workspace = true, optional = true }
 bevy.workspace = true
 bevy_common_assets.workspace = true
 bevy_ecs_ldtk.workspace = true

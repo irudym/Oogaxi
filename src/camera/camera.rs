@@ -4,7 +4,7 @@ use crate::camera::projection::virtual_projection;
 use crate::physics::Velocity;
 use crate::player::Player;
 use bevy::camera::RenderTarget;
-use bevy::camera::{Hdr, ScalingMode};
+use bevy::camera::Hdr;
 use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
 
 use bevy::post_process::bloom::Bloom;

@@ -2,7 +2,8 @@ use crate::{
     camera::{camera::*, sync_tracking_cameras},
     states::AppState,
 };
-use bevy::camera::{RenderTarget, visibility::RenderLayers};
+use bevy::camera::RenderTarget;
+use bevy::camera::visibility::RenderLayers;
 use bevy::prelude::*;
 
 pub struct CameraPlugin;

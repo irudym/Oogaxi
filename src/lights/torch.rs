@@ -5,7 +5,7 @@ use crate::{
     colors::GameColors,
     layers::LIGHT_LAYER,
     levels::{LevelOwned, TileGrid},
-    states::{AppState, IsPaused},
+    states::AppState,
     z::z,
 };
 use bevy::camera::visibility::RenderLayers;

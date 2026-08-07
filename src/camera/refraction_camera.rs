@@ -1,13 +1,12 @@
 use bevy::camera::RenderTarget;
 use bevy::render::render_resource::TextureFormat;
 use bevy::{
-    camera::{Hdr, ScalingMode, visibility::RenderLayers},
+    camera::{Hdr, visibility::RenderLayers},
     prelude::*,
 };
 
 use crate::{
     camera::{
-        GameCamera,
         projection::{VIRTUAL_RESOLUTION, virtual_projection},
         tracking::TracksGameCamera,
     },

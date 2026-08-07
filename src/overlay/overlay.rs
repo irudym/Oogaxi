@@ -1,5 +1,5 @@
 use bevy::{
-    camera::{Hdr, ScalingMode, visibility::RenderLayers},
+    camera::{Hdr, visibility::RenderLayers},
     prelude::*,
 };
 
@@ -9,7 +9,7 @@ use crate::{
         projection::{VIRTUAL_RESOLUTION, virtual_projection},
         refraction_camera::spawn_refraction_camera,
     },
-    layers::{OVERLAY_LAYER, REFRACTION_LAYER},
+    layers::OVERLAY_LAYER,
     lights::LightMap,
     materials::{
         LightCompositeMaterial, RefractionPresentMaterial, ScreenMaterial,

@@ -10,7 +10,7 @@ use crate::{
     camera::SceneTexture,
     colors::GameColors,
     game_rand::GameRng,
-    layers::{OVERLAY_LAYER, REFRACTION_LAYER},
+    layers::REFRACTION_LAYER,
     levels::LevelOwned,
     materials::WaterMaterial,
     particles::{Fade, LifeTime, Particle},
@@ -126,8 +126,10 @@ fn build_water_mesh(n: usize, width: f32, depth: f32) -> Mesh {
         uvs.push([t, 0.0]);
         uvs.push([t, 1.0]);
 
-        colors.push([1.0, 1.0, 1.0, 0.55]);
-        colors.push([0.35, 0.45, 0.6, 0.9]); //darker below
+        //colors.push([1.0, 1.0, 1.0, 0.55]);
+        //colors.push([0.35, 0.45, 0.6, 0.9]); //darker below
+        colors.push([1.0, 1.0, 1.0, 0.0]);
+        colors.push([1.0, 1.0, 1.0, 0.0]);
     }
 
     let mut indices = Vec::with_capacity((n - 1) + 6); //6 indices per quad (consists of two triangles)
@@ -188,8 +190,8 @@ pub fn spawn_water(
         water,
         Mesh2d(mesh),
         MeshMaterial2d(materials.add(WaterMaterial {
-            params: Vec4::new(0.0, 0.6, 0.25, 0.4), // time, sparkle, desat, refract
-            params2: Vec4::new(0.09, 0.35, 0.0, 0.0), // foam, shimmer
+            params: Vec4::new(0.0, 0.6, 0.3, 0.6), // time, sparkle, desat, refract
+            params2: Vec4::new(0.016, 0.35, 0.0, 0.0), // foam, shimmer
             noise_texture: Some(assets.get(Sheet::Water).image.clone()),
             scene: Some(scene.0.clone()),
         })),

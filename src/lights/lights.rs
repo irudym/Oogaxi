@@ -2,7 +2,7 @@ use bevy::asset::RenderAssetUsages;
 use bevy::mesh::{Indices, PrimitiveTopology};
 use bevy::render::render_resource::TextureFormat;
 use bevy::{
-    camera::{RenderTarget, ScalingMode, visibility::RenderLayers},
+    camera::{RenderTarget, visibility::RenderLayers},
     prelude::*,
 };
 use rand::RngExt;
@@ -11,13 +11,9 @@ use crate::camera::projection::virtual_projection;
 use crate::camera::tracking::TracksGameCamera;
 use crate::materials::LightMaterial;
 use crate::{
-    camera::{GameCamera, camera_follow},
-    colors::GameColors,
     game_rand::GameRng,
     layers::LIGHT_LAYER,
-    levels::{LevelOwned, TileGrid},
-    states::{AppState, IsPaused},
-    z::z,
+    levels::TileGrid,
 };
 
 #[derive(Resource)]

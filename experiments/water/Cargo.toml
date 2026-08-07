@@ -7,7 +7,7 @@ edition = "2024"
 oogaxi = { path = "../.."}
 bevy.workspace = true
 rand.workspace = true
-bevy-inspector-egui = { version = "0.37", optional = true }
+bevy-inspector-egui = {workspace = true, optional = true }
 
 
 # Dev only: 'cargo run --features dev' turns on dynamic linking
