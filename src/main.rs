@@ -20,7 +20,8 @@ use oogaxi::hazards::HazardPlugin;
 use oogaxi::levels::{TILE, levels::spawn_world};
 use oogaxi::lights::LightPlugin;
 use oogaxi::materials::{
-    FlashMaterial, LightCompositeMaterial, LightMaterial, ScreenMaterial, WaterMaterial,
+    FlashMaterial, LightCompositeMaterial, LightMaterial, RefractionPresentMaterial,
+    ScreenMaterial, WaterMaterial,
 };
 #[cfg(feature = "dev")]
 use oogaxi::overlay::OverlayCamera;
@@ -83,6 +84,7 @@ fn main() {
             Material2dPlugin::<LightMaterial>::default(),
             Material2dPlugin::<WaterMaterial>::default(),
             Material2dPlugin::<ScenePresentMaterial>::default(),
+            Material2dPlugin::<RefractionPresentMaterial>::default(),
         ),
     ))
     .add_systems(OnEnter(AppState::InGame), spawn_game);
@@ -101,7 +103,12 @@ fn main() {
         })
         .add_plugins(EguiPlugin::default())
         .add_plugins(ResourceInspectorPlugin::<FlightConfig>::default())
-        .add_systems(Startup, attach_egui_to_overlay.after(spawn_post_process));
+        .add_systems(
+            Update,
+            attach_egui_to_overlay
+                .after(spawn_post_process)
+                .run_if(run_once),
+        );
     }
 
     app.run();

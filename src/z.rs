@@ -11,4 +11,5 @@ pub mod z {
     pub const LIGHTS: f32 = 0.0;
     pub const WATER: f32 = -0.5;
     pub const SCENE: f32 = -1.0;
+    pub const REFRACTION: f32 = -0.5;
 }

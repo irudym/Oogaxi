@@ -17,6 +17,9 @@ fn hash(p: vec2<f32>) -> f32 {
 fn fragment(mesh: VertexOutput) -> @location(0) vec4<f32> {
     let t = params.x;
     let depth = mesh.uv.y;
+    var out = vec3<f32>(1.0,1.0,1.0);
+
+    /*
 
     // --- sample the scene behind us, refracted ---
     var screen_uv = frag_coord_to_uv(mesh.position.xy, view.viewport);
@@ -42,6 +45,7 @@ fn fragment(mesh: VertexOutput) -> @location(0) vec4<f32> {
     let n2 = hash(floor(vec2<f32>(mesh.uv.x * 45.0 - t * 2.0, mesh.uv.y * 22.0)));
     let glint = pow(n1 * n2, 8.0) * params.y * pow(1.0 - depth, 3.0);
     out += vec3<f32>(1.0, 0.98, 0.9) * glint;
+    */
 
     return vec4<f32>(out, 1.0);
 }

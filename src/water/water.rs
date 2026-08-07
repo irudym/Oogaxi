@@ -1,5 +1,6 @@
 use bevy::{
     asset::RenderAssetUsages,
+    camera::visibility::RenderLayers,
     mesh::{Indices, PrimitiveTopology},
     prelude::*,
 };
@@ -9,6 +10,7 @@ use crate::{
     camera::SceneTexture,
     colors::GameColors,
     game_rand::GameRng,
+    layers::{OVERLAY_LAYER, REFRACTION_LAYER},
     levels::LevelOwned,
     materials::WaterMaterial,
     particles::{Fade, LifeTime, Particle},
@@ -193,6 +195,7 @@ pub fn spawn_water(
         })),
         // Local (0,0) of the mesh sits at the left end of the resting surface.
         Transform::from_xyz(left, rest_y, z::WATER), // above the presented layer, below the lights
+        RenderLayers::layer(REFRACTION_LAYER),
         LevelOwned,
         DespawnOnExit(AppState::InGame),
     ));

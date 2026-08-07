@@ -1,4 +1,4 @@
-use crate::camera::SceneTexture;
+use crate::camera::{SceneTexture, camera_follow};
 use crate::lights::LightMap;
 use crate::overlay::overlay::spawn_post_process;
 use bevy::prelude::*;

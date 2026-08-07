@@ -1,6 +1,7 @@
 use crate::camera::SceneTexture;
 use crate::levels::TaxiRegistry;
 use crate::levels::taxi_registry::Stop;
+use crate::lights::spawn_torch;
 use crate::{
     assets::GameAssets,
     colors::GameColors,
@@ -337,7 +338,7 @@ pub fn convert_editor_entities(
                 crate::passengers::spawn_cave(&mut commands, &assets, pos);
             }
             "Torch" => {
-                crate::lights::spawn_torch(&mut commands, &mut meshes, &mut color_mats, &grid, pos);
+                spawn_torch(&mut commands, &mut meshes, &mut color_mats, &grid, pos);
             }
             _ => {}
         }

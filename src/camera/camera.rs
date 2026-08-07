@@ -1,4 +1,5 @@
 use crate::camera::SceneTexture;
+use crate::camera::projection::virtual_projection;
 //use crate::layers::WORLD_LAYER;
 use crate::physics::Velocity;
 use crate::player::Player;
@@ -61,13 +62,7 @@ pub fn spawn_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
         Tonemapping::TonyMcMapface,
         DebandDither::Enabled,
         Bloom::default(),
-        Projection::Orthographic(OrthographicProjection {
-            scaling_mode: ScalingMode::Fixed {
-                width: resolution.x,
-                height: resolution.y,
-            },
-            ..OrthographicProjection::default_2d()
-        }),
+        virtual_projection(),
         RenderTarget::Image(scene.clone().into()),
     ));
 

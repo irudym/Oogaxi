@@ -94,6 +94,7 @@ fn main() {
                 Material2dPlugin::<LightMaterial>::default(),
                 Material2dPlugin::<WaterMaterial>::default(),
                 Material2dPlugin::<ScenePresentMaterial>::default(),
+                Material2dPlugin::<RefractionPresentMaterial>::default(),
             ), //add shaders
         ))
         .add_systems(Startup, spawn_experiment_screen)
@@ -106,7 +107,12 @@ fn main() {
     })
     .add_plugins(EguiPlugin::default())
     .add_plugins(ResourceInspectorPlugin::<WaterTuning>::default())
-    .add_systems(Startup, attach_egui_to_overlay.after(spawn_post_process));
+    .add_systems(
+        Update,
+        attach_egui_to_overlay
+            .after(spawn_post_process)
+            .run_if(run_once),
+    );
 
     init_messages(&mut app);
 
@@ -156,8 +162,8 @@ fn apply_water_shader_tuning(
             mat.params.y = tuning.sparkle;
             mat.params.z = tuning.desat;
             mat.params.w = tuning.refract;
-            map.params2.x = tuning.foam;
-            map.params2.y = tuning.shimmer;
+            mat.params2.x = tuning.foam;
+            mat.params2.y = tuning.shimmer;
         }
     }
 }
